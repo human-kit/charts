@@ -15,9 +15,13 @@
 		"typecheck": "pnpm --filter @human-kit/charts check",
 		"size": "node scripts/size.mjs",
 		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint ."
+		"lint": "prettier --check . && eslint .",
+		"changeset": "changeset",
+		"release": "pnpm run build && node scripts/publish.mjs"
 	},
 	"devDependencies": {
+		"@changesets/changelog-github": "^1.0.1",
+		"@changesets/cli": "^3.0.3",
 		"@eslint/js": "^9.38.0",
 		"@sveltejs/kit": "^2.49.1",
 		"@sveltejs/package": "^2.3.0",
