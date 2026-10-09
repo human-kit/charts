@@ -1,4 +1,5 @@
 <script lang="ts" generics="T">
+	import { untrack } from 'svelte';
 	import { read, type Channel } from '../internal/channel.js';
 	import { linePath, round } from '../internal/path.js';
 	import { useChartContext, type ChartPoint, type ChartSeries } from '../root/context.js';
@@ -10,7 +11,7 @@
 
 	const groups = $derived.by(() => {
 		const rows = (data ?? ctx.data) as readonly T[];
-		const xc = (x ?? ctx.x) as Channel<T, number> | undefined;
+		const xc = (x ?? ctx.x) as Channel<T, number | Date> | undefined;
 		const yc = (y ?? ctx.y) as Channel<T, number> | undefined;
 		const sc = (series ?? ctx.series) as Channel<T, string> | undefined;
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a scratch map for one pass.
@@ -21,11 +22,11 @@
 				datum,
 				index,
 				series: sc ? String(read(sc, datum, index)) : '',
-				x: Number(read(xc, datum, index)),
+				x: read(xc, datum, index),
 				y: Number(read(yc, datum, index))
 			};
 			// A point without a value is a gap in the line, and it takes no focus.
-			if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+			if (!Number.isFinite(+point.x) || !Number.isFinite(point.y)) return;
 			let points = out.get(point.series);
 			if (!points) out.set(point.series, (points = []));
 			points.push(point);
@@ -33,7 +34,10 @@
 		return [...out].map(([name, points]) => ({ name, points }));
 	});
 
-	const registration = ctx.register(() => groups as ChartSeries[]);
+	const registration = ctx.register(
+		() => groups as ChartSeries[],
+		untrack(() => data !== undefined || x !== undefined || y !== undefined)
+	);
 	$effect(() => registration.unregister);
 </script>
 
@@ -41,7 +45,7 @@
 	{#each groups as s, si (s.name)}
 		<g role="group" aria-label={s.name || undefined} data-series={s.name || undefined}>
 			<path
-				d={linePath(s.points.map((p) => [ctx.xScale(p.x), ctx.yScale(p.y)]))}
+				d={linePath(s.points.map((p) => [ctx.xScale(+p.x), ctx.yScale(p.y)]))}
 				fill="none"
 				stroke="currentColor"
 				aria-hidden="true"
@@ -49,12 +53,12 @@
 			/>
 			{#each s.points as p, i (i)}
 				<circle
-					cx={round(ctx.xScale(p.x))}
+					cx={round(ctx.xScale(+p.x))}
 					cy={round(ctx.yScale(p.y))}
 					{r}
 					fill="currentColor"
 					data-point=""
-					{...ctx.point(registration.id, si, i)}
+					{...ctx.point(registration.id, si, i, p as ChartPoint)}
 				/>
 			{/each}
 		</g>

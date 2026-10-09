@@ -1,6 +1,6 @@
 import { getContext, setContext } from 'svelte';
 import type { Channel } from '../internal/channel.js';
-import type { LinearScale } from '../scales/linear.js';
+import type { Scale } from '../scales/types.js';
 
 /** One point of the chart, as the focus state and `onSelect` give it. */
 export type ChartPoint<T = unknown> = {
@@ -11,7 +11,7 @@ export type ChartPoint<T = unknown> = {
 	/** The name of the series. It is empty when the chart has one series. */
 	series: string;
 	/** The value of the x channel. */
-	x: number;
+	x: number | Date;
 	/** The value of the y channel. */
 	y: number;
 };
@@ -20,6 +20,16 @@ export type ChartPoint<T = unknown> = {
 export type ChartSeries<T = unknown> = {
 	name: string;
 	points: ChartPoint<T>[];
+};
+
+/** A tick of an axis. */
+export type ChartTick = {
+	/** The value, as a number. A date is its time in milliseconds. */
+	value: number;
+	/** The position on the axis, in pixels. */
+	position: number;
+	/** The text of the label. */
+	label: string;
 };
 
 /** The space around the plot, in pixels. */
@@ -41,21 +51,35 @@ export type ChartContext = {
 	/** The instance id. Every id of the parts is made from it. */
 	readonly instanceId: string;
 	readonly data: readonly any[];
-	readonly x: Channel<any, number> | undefined;
+	readonly x: Channel<any, number | Date> | undefined;
 	readonly y: Channel<any, number> | undefined;
 	readonly series: Channel<any, string> | undefined;
 	/** The size of the SVG, in pixels. */
 	readonly width: number;
 	readonly height: number;
 	readonly margin: ChartMargin;
-	readonly xScale: LinearScale;
-	readonly yScale: LinearScale;
+	readonly xScale: Scale;
+	readonly yScale: Scale;
+	/** The ticks of each axis. `Chart.Axis` and `Chart.Grid` share them. */
+	readonly xTicks: ChartTick[];
+	readonly yTicks: ChartTick[];
+	/**
+	 * Asks for space around the plot, for the labels of an axis. The margin of a side is the
+	 * largest space that a part asks for, unless the consumer gives the margin.
+	 */
+	reserve(needs: Partial<ChartMargin>): {
+		update(needs: Partial<ChartMargin>): void;
+		unregister(): void;
+	};
 	/** The id of the `Chart.Title` element, when one is in the DOM. */
 	titleId: string | null;
-	/** Adds a mark. `series` is read again each time the data changes. */
-	register(series: () => ChartSeries[]): { id: string; unregister(): void };
+	/**
+	 * Adds a mark. `series` is read again each time the data changes. `own` tells that the mark
+	 * has data or channels of its own, which the domains must include.
+	 */
+	register(series: () => ChartSeries[], own: boolean): { id: string; unregister(): void };
 	/** The attributes of the element of a point. */
-	point(mark: string, series: number, index: number): PointAttributes;
+	point(mark: string, series: number, index: number, point: ChartPoint): PointAttributes;
 	/** The accessible name and description of the chart, for the `Chart.Plot` element. */
 	readonly labels: {
 		'aria-label': string | undefined;

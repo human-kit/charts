@@ -3,13 +3,18 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import { move } from '../internal/navigation.js';
 	import { isFocusVisible, onModalityChange } from '../internal/modality.js';
-	import { nice, scaleLinear } from '../scales/linear.js';
-	import type { ChartRootProps } from '../types.js';
+	import { read } from '../internal/channel.js';
+	import { dev } from '../internal/environment.js';
+	import { scaleLinear } from '../scales/linear.js';
+	import type { Scale } from '../scales/types.js';
+	import type { ChartRootProps, ScaleOptions, ValueFormat } from '../types.js';
 	import {
 		setChartContext,
 		type ChartContext,
+		type ChartMargin,
 		type ChartPoint,
-		type ChartSeries
+		type ChartSeries,
+		type ChartTick
 	} from './context.js';
 
 	const generatedId = $props.id();
@@ -29,7 +34,8 @@
 		focused = $bindable(null),
 		onSelect,
 		locale,
-		formatOptions,
+		xFormat,
+		yFormat,
 		'aria-label': ariaLabel,
 		'aria-labelledby': ariaLabelledBy,
 		'aria-describedby': ariaDescribedBy,
@@ -37,7 +43,6 @@
 		class: className = '',
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- bindable: the parent reads it.
 		element = $bindable<HTMLElement | null>(null),
-
 		context = $bindable(),
 		...restProps
 	}: ChartRootProps<T> = $props();
@@ -48,16 +53,31 @@
 	const DEFAULT_WIDTH = 640;
 	let measuredWidth = $state(0);
 	const width = $derived(widthProp ?? (measuredWidth || DEFAULT_WIDTH));
-	const margin = $derived({ top: 8, right: 8, bottom: 8, left: 8, ...marginProp });
+
+	// The space that each axis needs for its labels. The largest need of a side is its margin.
+	const SIDES = ['top', 'right', 'bottom', 'left'] as const;
+	const MIN_MARGIN = 8;
+	const reserved = new SvelteMap<string, Partial<ChartMargin>>();
+	let reserveCount = 0;
+	const margin = $derived.by(() => {
+		const out: ChartMargin = { top: 0, right: 0, bottom: 0, left: 0 };
+		for (const side of SIDES) {
+			let size = MIN_MARGIN;
+			for (const needs of reserved.values()) size = Math.max(size, Math.ceil(needs[side] ?? 0));
+			out[side] = marginProp?.[side] ?? size;
+		}
+		return out;
+	});
 
 	// The marks, in mount order. The order of the marks is the order of the series for the keyboard.
-	const marks = new SvelteMap<string, () => ChartSeries[]>();
+	type Mark = { read: () => ChartSeries[]; own: boolean };
+	const marks = new SvelteMap<string, Mark>();
 	let markCount = 0;
 
 	type Entry = { mark: string; series: number; points: ChartPoint[] };
 	const entries = $derived.by(() => {
 		const out: Entry[] = [];
-		for (const [mark, read] of marks) {
+		for (const [mark, { read }] of marks) {
 			read().forEach((s, index) => {
 				if (s.points.length) out.push({ mark, series: index, points: s.points });
 			});
@@ -81,30 +101,100 @@
 		return map;
 	});
 
-	function extent(values: number[]): [number, number] {
-		return values.length ? [Math.min(...values), Math.max(...values)] : [0, 1];
+	// The values of the domains. On a server, a `$derived` keeps the value of its first read, and
+	// the parts read it in markup order. Thus the values of the root come from its own props, which
+	// are complete before the first part starts. Only a mark with data or channels of its own adds
+	// values through its registration.
+	const rootValues = $derived.by(() => {
+		const xs: number[] = [];
+		const ys: number[] = [];
+		if (x && y) {
+			data.forEach((row, index) => {
+				const xv = +read(x, row, index);
+				const yv = +read(y, row, index);
+				if (!Number.isFinite(xv) || !Number.isFinite(yv)) return;
+				xs.push(xv);
+				ys.push(yv);
+			});
+		}
+		return { xs, ys };
+	});
+	const ownPoints = $derived(
+		[...marks.values()].filter((m) => m.own).flatMap((m) => m.read().flatMap((s) => s.points))
+	);
+	const xValues = $derived([...rootValues.xs, ...ownPoints.map((p) => +p.x)]);
+	const yValues = $derived([...rootValues.ys, ...ownPoints.map((p) => p.y)]);
+	const firstX = $derived(data.length && x ? read(x, data[0], 0) : ownPoints[0]?.x);
+
+	/** About one tick for each 80 pixels of a horizontal axis, and each 40 of a vertical one. */
+	function tickCount(range: readonly [number, number], spacing: number) {
+		return Math.max(2, Math.round(Math.abs(range[1] - range[0]) / spacing));
 	}
 
-	const xDomain = $derived.by(() => {
-		const domain =
-			xScaleOptions?.domain ?? extent(entries.flatMap((e) => e.points.map((p) => p.x)));
-		return xScaleOptions?.nice ? nice(domain) : domain;
-	});
-	const yDomain = $derived.by(() => {
-		const domain =
-			yScaleOptions?.domain ?? extent(entries.flatMap((e) => e.points.map((p) => p.y)));
-		return (yScaleOptions?.nice ?? true) ? nice(domain) : domain;
-	});
-	const xScale = $derived(scaleLinear(xDomain, [margin.left, width - margin.right]));
-	const yScale = $derived(scaleLinear(yDomain, [height - margin.bottom, margin.top]));
+	function makeScale(
+		options: ScaleOptions | undefined,
+		values: number[],
+		range: [number, number],
+		count: number,
+		niceDefault: boolean
+	): Scale {
+		const type = options?.type ?? scaleLinear;
+		const given = options?.domain;
+		const domain: [number, number] = given
+			? [+given[0], +given[1]]
+			: values.length
+				? [Math.min(...values), Math.max(...values)]
+				: [0, 1];
+		const scale = type(domain, range);
+		return (options?.nice ?? niceDefault) ? type(scale.nice(count), range) : scale;
+	}
 
-	const numberFormat = $derived(new Intl.NumberFormat(locale, formatOptions));
+	const xRange = $derived<[number, number]>([margin.left, width - margin.right]);
+	const yRange = $derived<[number, number]>([height - margin.bottom, margin.top]);
+	const xCount = $derived(tickCount(xRange, 80));
+	const yCount = $derived(tickCount(yRange, 40));
+	const xScale = $derived(makeScale(xScaleOptions, xValues, xRange, xCount, false));
+	const yScale = $derived(makeScale(yScaleOptions, yValues, yRange, yCount, true));
+
+	$effect(() => {
+		if (dev && firstX instanceof Date && xScale.kind !== 'time') {
+			console.warn(
+				'Chart.Root: the x values are dates, but the x scale is not a time scale. Import `scaleTime` from "@human-kit/charts/scales/time" and give `xScale={{ type: scaleTime }}`.'
+			);
+		}
+	});
+
+	function valueFormatter(scale: Scale, values: number[], format: ValueFormat | undefined) {
+		if (typeof format === 'function') {
+			return (value: number) => format(scale.kind === 'time' ? new Date(value) : value);
+		}
+		return scale.valueFormat(values, locale, format);
+	}
+
+	const xValueFormat = $derived(valueFormatter(xScale, xValues, xFormat));
+	const yValueFormat = $derived(valueFormatter(yScale, yValues, yFormat));
+
+	function makeTicks(
+		scale: Scale,
+		count: number,
+		format: ValueFormat | undefined,
+		full: (value: number) => string
+	): ChartTick[] {
+		// A format from the consumer is also the format of the ticks.
+		const label = format ? full : scale.tickFormat(count, locale);
+		return scale
+			.ticks(count)
+			.map((value) => ({ value, position: scale(value), label: label(value) }));
+	}
+
+	const xTicks = $derived(makeTicks(xScale, xCount, xFormat, xValueFormat));
+	const yTicks = $derived(makeTicks(yScale, yCount, yFormat, yValueFormat));
 
 	/** The accessible name of a point: the x value, the series and the y value. */
 	function pointLabel(point: ChartPoint) {
-		const parts = [numberFormat.format(point.x)];
+		const parts = [xValueFormat(+point.x)];
 		if (point.series) parts.push(point.series);
-		parts.push(numberFormat.format(point.y));
+		parts.push(yValueFormat(point.y));
 		return parts.join(', ');
 	}
 
@@ -151,7 +241,7 @@
 				return;
 			}
 			const next = move(
-				entries.map((e) => e.points.map((p) => p.x)),
+				entries.map((e) => e.points.map((p) => +p.x)),
 				positions.get(id)!,
 				event.key
 			);
@@ -220,25 +310,44 @@
 		get yScale() {
 			return yScale;
 		},
+		get xTicks() {
+			return xTicks;
+		},
+		get yTicks() {
+			return yTicks;
+		},
+		reserve(needs) {
+			const id = `a${reserveCount++}`;
+			reserved.set(id, needs);
+			return {
+				update(next) {
+					const last = reserved.get(id);
+					// A change below one pixel does not count: it stops a loop of measures.
+					const same =
+						last && SIDES.every((side) => Math.abs((last[side] ?? 0) - (next[side] ?? 0)) < 1);
+					if (!same) reserved.set(id, next);
+				},
+				unregister: () => reserved.delete(id)
+			};
+		},
 		get titleId() {
 			return titleId;
 		},
 		set titleId(value) {
 			titleId = value;
 		},
-		register(read) {
+		register(read, own) {
 			const id = `m${markCount++}`;
-			marks.set(id, read);
+			marks.set(id, { read, own });
 			return { id, unregister: () => marks.delete(id) };
 		},
-		point(mark, s, index) {
+		point(mark, s, index, point) {
 			const id = pointId(mark, s, index);
-			const point = pointAt(id);
 			return {
 				id,
 				role: 'img',
 				tabindex: id === tabStopId ? 0 : -1,
-				'aria-label': point ? pointLabel(point) : '',
+				'aria-label': pointLabel(point),
 				'data-focused': id === focusedId ? 'true' : undefined,
 				'data-focus-visible': id === focusedId && focusVisible ? 'true' : undefined
 			};

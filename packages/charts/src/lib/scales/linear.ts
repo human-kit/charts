@@ -1,15 +1,7 @@
-/** A function that maps a value of the data to a position in pixels. */
-export type LinearScale = {
-	(value: number): number;
-	/** The values at the two ends of the scale. */
-	readonly domain: readonly [number, number];
-	/** The positions, in pixels, of the two ends of the scale. */
-	readonly range: readonly [number, number];
-	/** The position back to a value. */
-	invert(position: number): number;
-	/** Round values in the domain, about `count` of them. */
-	ticks(count?: number): number[];
-};
+import type { FormatOptions, Scale } from './types.js';
+
+/** A scale that maps numbers to positions in proportion. */
+export type LinearScale = Scale & { readonly kind: 'linear' };
 
 const E10 = Math.sqrt(50);
 const E5 = Math.sqrt(10);
@@ -69,11 +61,26 @@ export function scaleLinear(
 	// An empty domain puts every value in the middle of the range.
 	const span = d1 - d0;
 	const k = span ? (r1 - r0) / span : 0;
-	const scale = ((value: number) => (span ? r0 + (value - d0) * k : (r0 + r1) / 2)) as LinearScale;
+	const scale = (value: number) => (span ? r0 + (value - d0) * k : (r0 + r1) / 2);
 	return Object.assign(scale, {
+		kind: 'linear' as const,
 		domain,
 		range,
 		invert: (position: number) => (k ? d0 + (position - r0) / k : d0),
-		ticks: (count?: number) => ticks(d0, d1, count)
+		ticks: (count?: number) => ticks(d0, d1, count),
+		tickFormat(count = 10, locale?: string) {
+			// As many decimals as the step has, and not more: 0.5 shows as "0.5", 2 as "2".
+			const digits = Math.max(0, -Math.floor(Math.log10(tickStep(d0, d1, count) || 1)));
+			const format = new Intl.NumberFormat(locale, {
+				minimumFractionDigits: digits,
+				maximumFractionDigits: digits
+			});
+			return (value: number) => format.format(value);
+		},
+		valueFormat(_values: number[], locale?: string, options?: FormatOptions) {
+			const format = new Intl.NumberFormat(locale, options as Intl.NumberFormatOptions);
+			return (value: number) => format.format(value);
+		},
+		nice: (count?: number) => nice(domain, count)
 	});
 }

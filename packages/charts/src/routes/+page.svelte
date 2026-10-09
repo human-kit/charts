@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { Chart, type ChartPoint } from '$lib/index.js';
+	import { scaleTime } from '$lib/scales/time.js';
 
-	type Row = { year: number; region: string; revenue: number };
+	type Row = { year: Date; region: string; revenue: number };
 	const regions = ['North', 'South', 'East'];
 	const data: Row[] = regions.flatMap((region, r) =>
 		Array.from({ length: 12 }, (_, i) => ({
-			year: 2014 + i,
+			year: new Date(2014 + i, 0, 1),
 			region,
 			revenue: Math.round(40 + r * 15 + i * (3 + r) + Math.sin(i + r) * 8)
 		}))
@@ -24,6 +25,8 @@
 		x="year"
 		y="revenue"
 		series="region"
+		xScale={{ type: scaleTime }}
+		yFormat={{ style: 'currency', currency: 'USD', maximumFractionDigits: 0 }}
 		height={320}
 		bind:focused
 		onSelect={(point) => (selected = point)}
@@ -31,12 +34,17 @@
 	>
 		<Chart.Title>Revenue per region, 2014 to 2025</Chart.Title>
 		<Chart.Plot>
+			<Chart.Grid axis="y" class="grid" />
+			<Chart.Axis position="bottom" />
+			<Chart.Axis position="left" label="Revenue (USD)" />
 			<Chart.Line />
 		</Chart.Plot>
 	</Chart.Root>
 
-	<p>Focused: {focused ? `${focused.datum.region} ${focused.datum.year}` : 'none'}</p>
-	<p>Selected: {selected ? `${selected.datum.region} ${selected.datum.year}` : 'none'}</p>
+	<p>Focused: {focused ? `${focused.datum.region} ${focused.datum.year.getFullYear()}` : 'none'}</p>
+	<p>
+		Selected: {selected ? `${selected.datum.region} ${selected.datum.year.getFullYear()}` : 'none'}
+	</p>
 </main>
 
 <style>
@@ -48,6 +56,10 @@
 	}
 	:global(.chart) {
 		margin: 0;
+		font-size: 12px;
+	}
+	:global(.chart .grid) {
+		color: #e5e7eb;
 	}
 	:global(.chart [data-series='North']) {
 		color: #2563eb;
