@@ -1,7 +1,7 @@
 import type { Snippet } from 'svelte';
 import type { HTMLAttributes, SVGAttributes } from 'svelte/elements';
 import type { Channel } from './internal/channel.js';
-import type { ChartContext, ChartMargin, ChartPoint, ChartTick } from './root/context.js';
+import type { ChartContext, ChartMargin, ChartPoint, ChartTick, XValue } from './root/context.js';
 import type { FormatOptions, Scale, ScaleType } from './scales/types.js';
 
 export type {
@@ -12,27 +12,35 @@ export type {
 	ChartTick,
 	FormatOptions,
 	Scale,
-	ScaleType
+	ScaleType,
+	XValue
 };
 
 /** The settings of the scale of an axis. */
 export type ScaleOptions = {
 	/**
-	 * The type of scale: `scaleLinear` (the default) or `scaleTime`. Import the type from its
-	 * subpath, thus a chart without dates does not include the time scale.
+	 * The type of scale: `scaleLinear` (the default), `scaleTime` or `scaleBand`. Import the type
+	 * from its subpath, thus a chart includes only the scales that it uses.
 	 */
 	type?: ScaleType;
 	/** The values at the two ends. Without it, the root uses the smallest and the largest value. */
 	domain?: [number | Date, number | Date];
 	/** Extends the domain to round values. The default is `true` for y and `false` for x. */
 	nice?: boolean;
+	/**
+	 * Extends the domain to include zero. The default is `true` for y and `false` for x. A bar
+	 * starts at zero, thus a bar chart needs it.
+	 */
+	zero?: boolean;
+	/** The space between two bands of a band scale, as a fraction of a step. The default is 0.2. */
+	padding?: number;
 };
 
 /**
  * The format of the values of a channel: the options of `Intl.NumberFormat` or
  * `Intl.DateTimeFormat`, or a function that writes the text.
  */
-export type ValueFormat = FormatOptions | ((value: number | Date) => string);
+export type ValueFormat = FormatOptions | ((value: XValue) => string);
 
 export type ChartRootProps<T> = {
 	/** A stable id, from which the component makes its internal ids. Give one on a server. */
@@ -40,7 +48,7 @@ export type ChartRootProps<T> = {
 	/** The rows. Each mark uses them when it has no `data` of its own. */
 	data?: readonly T[];
 	/** The x channel: a field name of the row, or a function of the row. */
-	x?: Channel<T, number | Date>;
+	x?: Channel<T, XValue>;
 	/** The y channel: a field name of the row, or a function of the row. */
 	y?: Channel<T, number>;
 	/** The channel that divides the rows into series. Without it, the chart has one series. */
@@ -108,7 +116,7 @@ export type ChartLineProps<T> = {
 	/** The rows of this mark. Without it, the mark uses the data of the root. */
 	data?: readonly T[];
 	/** The x channel of this mark. Without it, the mark uses the channel of the root. */
-	x?: Channel<T, number | Date>;
+	x?: Channel<T, XValue>;
 	/** The y channel of this mark. Without it, the mark uses the channel of the root. */
 	y?: Channel<T, number>;
 	/** The series channel of this mark. Without it, the mark uses the channel of the root. */
@@ -137,4 +145,14 @@ export type ChartGridProps = {
 	axis?: 'x' | 'y';
 	/** The CSS class names of the group of the grid. */
 	class?: string;
+};
+
+export type ChartBarProps<T> = Omit<ChartLineProps<T>, 'r'> & {
+	/**
+	 * How the bars of two series share a category. `grouped` puts them side by side, and
+	 * `stacked` puts them one on the other. The default is `grouped`.
+	 */
+	layout?: 'grouped' | 'stacked';
+	/** The space between the bars of a group, as a fraction of a bar. The default is 0.1. */
+	groupPadding?: number;
 };

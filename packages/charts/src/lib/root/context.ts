@@ -11,10 +11,16 @@ export type ChartPoint<T = unknown> = {
 	/** The name of the series. It is empty when the chart has one series. */
 	series: string;
 	/** The value of the x channel. */
-	x: number | Date;
+	x: XValue;
 	/** The value of the y channel. */
 	y: number;
 };
+
+/** A value of the x channel: a number, a date, or a category of a band scale. */
+export type XValue = number | Date | string;
+
+/** The values that a mark adds to the domains of the scales. */
+export type ChartExtent = { x?: XValue[]; y?: number[] };
 
 /** The points of one series of a mark. */
 export type ChartSeries<T = unknown> = {
@@ -51,7 +57,7 @@ export type ChartContext = {
 	/** The instance id. Every id of the parts is made from it. */
 	readonly instanceId: string;
 	readonly data: readonly any[];
-	readonly x: Channel<any, number | Date> | undefined;
+	readonly x: Channel<any, XValue> | undefined;
 	readonly y: Channel<any, number> | undefined;
 	readonly series: Channel<any, string> | undefined;
 	/** The size of the SVG, in pixels. */
@@ -73,11 +79,17 @@ export type ChartContext = {
 	};
 	/** The id of the `Chart.Title` element, when one is in the DOM. */
 	titleId: string | null;
+	/** An x value as a number for the x scale: a date is its time, and a category is its index. */
+	toX(value: XValue): number;
 	/**
-	 * Adds a mark. `series` is read again each time the data changes. `own` tells that the mark
-	 * has data or channels of its own, which the domains must include.
+	 * Adds a mark. `series` is read again each time the data changes. `extent` gives the values
+	 * that the domains must include in addition to the data of the root: the data of a mark with
+	 * data or channels of its own, or the tops of a stack.
 	 */
-	register(series: () => ChartSeries[], own: boolean): { id: string; unregister(): void };
+	register(
+		series: () => ChartSeries[],
+		extent?: () => ChartExtent
+	): { id: string; unregister(): void };
 	/** The attributes of the element of a point. */
 	point(mark: string, series: number, index: number, point: ChartPoint): PointAttributes;
 	/** The accessible name and description of the chart, for the `Chart.Plot` element. */

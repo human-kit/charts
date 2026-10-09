@@ -150,16 +150,27 @@ subpath and give it as `type`:
 <Chart.Root {data} x="date" y="value" xScale={{ type: scaleTime }} yScale={{ domain: [0, 100] }}>
 ```
 
-| Scale    | Subpath                           | Values             |
-| -------- | --------------------------------- | ------------------ |
-| `linear` | `@human-kit/charts/scales/linear` | `number`           |
-| `time`   | `@human-kit/charts/scales/time`   | `Date`             |
-| `band`   | `@human-kit/charts/scales/band`   | `string` (planned) |
+| Scale    | Subpath                           | Values                |
+| -------- | --------------------------------- | --------------------- |
+| `linear` | `@human-kit/charts/scales/linear` | `number`              |
+| `time`   | `@human-kit/charts/scales/time`   | `Date`                |
+| `band`   | `@human-kit/charts/scales/band`   | `string` (categories) |
 
 The root does not choose the scale from the values. A choice from the values
 puts all of the scales in each bundle, also in a chart without dates: the time
 scale adds about 0.9 kB gzip. In a development build, the root writes a warning
-when the x values are dates and the x scale is not a time scale.
+when the x values are dates and the x scale is not a time scale, or when they are
+strings and the x scale is not a band scale.
+
+The y scale includes zero by default (`zero: true`), and a bar needs it. Give
+`yScale={{ zero: false }}` for a line that must fill the plot. The rule is
+on the scale and not on the mark, because a server cannot see a mark that is
+after a guide (see "Size and rendering on a server").
+
+A band scale gives one band per category, in the order of the first appearance
+in the data. The scale gives the middle of a band, and `bandwidth` gives its
+width. `padding` is the space between two bands, as a fraction of a step. The
+default is 0.2.
 
 Each scale is also a pure function that you can use without a chart. The time
 scale puts its ticks at calendar boundaries (years, quarters, months, Sundays,
@@ -179,11 +190,11 @@ days, hours, minutes and seconds). It makes its labels with
 
 ### Marks
 
-| Part         | Description                                                                                              |
-| ------------ | -------------------------------------------------------------------------------------------------------- |
-| `Chart.Line` | Makes one `<path>` per series, and one focus target per point.                                           |
-| `Chart.Area` | Makes one filled `<path>` per series. `stack` puts the series one on the other.                          |
-| `Chart.Bar`  | Makes one `<rect>` per row. `layout` is `grouped` or `stacked`. `orientation` is vertical or horizontal. |
+| Part         | Description                                                                                                        |
+| ------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `Chart.Line` | Makes one `<path>` per series, and one focus target per point.                                                     |
+| `Chart.Area` | Makes one filled `<path>` per series. `stack` puts the series one on the other.                                    |
+| `Chart.Bar`  | Makes one `<rect>` per row. `layout` is `grouped` or `stacked`. `orientation` is vertical or horizontal (planned). |
 
 A row without a finite value is a gap in the line. It is not a focus target,
 but the data table shows it.
@@ -292,9 +303,10 @@ series and the horizontal arrows move between the series.
   - The root makes its domains from its own `data` and channels, which are
     complete before the first part starts. A chart with only root data has the
     correct scales on the server, in all orders of the parts.
-  - A mark with its own `data` or channels adds its values when it starts. On
-    the server, the parts before it do not see them. Give the domain, or put
-    the mark before the guides.
+  - A mark with its own `data` or channels, and a stacked `Chart.Bar`, add
+    values when they start. On the server, the parts before them do not see the
+    values: a grid before a stack has the domain of one bar. Give the domain, or
+    put the mark before the guides.
   - The margins on the server are the minimum margins, because the guides
     before an axis do not know that axis. The labels of the axes are clipped
     until the first measure in the browser.
@@ -336,14 +348,18 @@ The prototype answers the open questions before the full implementation:
 
 Steps 1 and 2 are complete (2026-10-09).
 
-- `Chart.Root`, `Chart.Title`, `Chart.Plot`, `Chart.Line`, `Chart.Axis`,
-  `Chart.Grid`, the linear scale and the time scale are in `packages/charts`.
+- `Chart.Root`, `Chart.Title`, `Chart.Plot`, `Chart.Line`, `Chart.Bar`
+  (vertical, grouped and stacked), `Chart.Axis`, `Chart.Grid`, and the linear,
+  time and band scales are in `packages/charts`.
 - Sizes from `pnpm size`, gzip, without the Svelte runtime:
 
   | Chart                                       | Size    |
   | ------------------------------------------- | ------- |
-  | A line with the keyboard operation          | 4.45 kB |
-  | A line on a time scale, two axes and a grid | 6.55 kB |
+  | A line with the keyboard operation          | 4.66 kB |
+  | A line on a time scale, two axes and a grid | 6.76 kB |
+  | Stacked bars on a band scale, axes and grid | 6.19 kB |
+
+  The support for categories in the root adds about 0.2 kB to each chart.
 
 - Problems that the prototype found:
   1. The names used one number format for all of the values, thus a year

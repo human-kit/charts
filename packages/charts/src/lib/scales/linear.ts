@@ -66,6 +66,7 @@ export function scaleLinear(
 		kind: 'linear' as const,
 		domain,
 		range,
+		bandwidth: 0,
 		invert: (position: number) => (k ? d0 + (position - r0) / k : d0),
 		ticks: (count?: number) => ticks(d0, d1, count),
 		tickFormat(count = 10, locale?: string) {

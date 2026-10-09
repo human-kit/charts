@@ -24,6 +24,10 @@
 		"./scales/time": {
 			"types": "./dist/scales/time.d.ts",
 			"default": "./dist/scales/time.js"
+		},
+		"./scales/band": {
+			"types": "./dist/scales/band.d.ts",
+			"default": "./dist/scales/band.js"
 		}
 	},
 	"files": [

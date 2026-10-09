@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Chart, type ChartPoint } from '$lib/index.js';
 	import { scaleTime } from '$lib/scales/time.js';
+	import { scaleBand } from '$lib/scales/band.js';
 
 	type Row = { year: Date; region: string; revenue: number };
 	const regions = ['North', 'South', 'East'];
@@ -11,6 +12,17 @@
 			revenue: Math.round(40 + r * 15 + i * (3 + r) + Math.sin(i + r) * 8)
 		}))
 	);
+
+	type Sale = { quarter: string; region: string; sales: number };
+	const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+	const sales: Sale[] = regions.flatMap((region, r) =>
+		quarters.map((quarter, q) => ({
+			quarter,
+			region,
+			sales: 20 + r * 8 + q * 6 - (q === 2 ? 15 : 0)
+		}))
+	);
+	let layout: 'grouped' | 'stacked' = $state('grouped');
 
 	let focused: ChartPoint<Row> | null = $state(null);
 	let selected: ChartPoint<Row> | null = $state(null);
@@ -45,6 +57,33 @@
 	<p>
 		Selected: {selected ? `${selected.datum.region} ${selected.datum.year.getFullYear()}` : 'none'}
 	</p>
+
+	<h2>Bars</h2>
+	<label>
+		<input
+			type="checkbox"
+			checked={layout === 'stacked'}
+			onchange={(event) => (layout = event.currentTarget.checked ? 'stacked' : 'grouped')}
+		/>
+		Stacked
+	</label>
+	<Chart.Root
+		data={sales}
+		x="quarter"
+		y="sales"
+		series="region"
+		xScale={{ type: scaleBand }}
+		height={280}
+		class="chart"
+	>
+		<Chart.Title>Sales per quarter and region</Chart.Title>
+		<Chart.Plot>
+			<Chart.Grid axis="y" class="grid" />
+			<Chart.Axis position="bottom" />
+			<Chart.Axis position="left" label="Sales (units)" />
+			<Chart.Bar {layout} />
+		</Chart.Plot>
+	</Chart.Root>
 </main>
 
 <style>
@@ -78,6 +117,9 @@
 	}
 	:global(.chart [data-point][data-focused]) {
 		r: 6;
+	}
+	:global(.chart [data-bar][data-focused]) {
+		opacity: 0.8;
 	}
 	:global(.chart [data-point][data-focus-visible]) {
 		stroke: CanvasText;

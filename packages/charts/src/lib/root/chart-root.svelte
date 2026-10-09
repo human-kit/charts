@@ -14,7 +14,9 @@
 		type ChartMargin,
 		type ChartPoint,
 		type ChartSeries,
-		type ChartTick
+		type ChartExtent,
+		type ChartTick,
+		type XValue
 	} from './context.js';
 
 	const generatedId = $props.id();
@@ -70,7 +72,7 @@
 	});
 
 	// The marks, in mount order. The order of the marks is the order of the series for the keyboard.
-	type Mark = { read: () => ChartSeries[]; own: boolean };
+	type Mark = { read: () => ChartSeries[]; extent?: () => ChartExtent };
 	const marks = new SvelteMap<string, Mark>();
 	let markCount = 0;
 
@@ -106,25 +108,33 @@
 	// are complete before the first part starts. Only a mark with data or channels of its own adds
 	// values through its registration.
 	const rootValues = $derived.by(() => {
-		const xs: number[] = [];
+		const xs: XValue[] = [];
 		const ys: number[] = [];
 		if (x && y) {
 			data.forEach((row, index) => {
-				const xv = +read(x, row, index);
+				const xv = read(x, row, index);
 				const yv = +read(y, row, index);
-				if (!Number.isFinite(xv) || !Number.isFinite(yv)) return;
+				if (!Number.isFinite(yv) || (typeof xv !== 'string' && !Number.isFinite(+xv))) return;
 				xs.push(xv);
 				ys.push(yv);
 			});
 		}
 		return { xs, ys };
 	});
-	const ownPoints = $derived(
-		[...marks.values()].filter((m) => m.own).flatMap((m) => m.read().flatMap((s) => s.points))
-	);
-	const xValues = $derived([...rootValues.xs, ...ownPoints.map((p) => +p.x)]);
-	const yValues = $derived([...rootValues.ys, ...ownPoints.map((p) => p.y)]);
-	const firstX = $derived(data.length && x ? read(x, data[0], 0) : ownPoints[0]?.x);
+	const extents = $derived([...marks.values()].flatMap((m) => (m.extent ? [m.extent()] : [])));
+	const rawX = $derived([...rootValues.xs, ...extents.flatMap((e) => e.x ?? [])]);
+	// The categories of a band scale, in the order of their first appearance.
+	const categories = $derived([
+		...new Set(rawX.filter((value): value is string => typeof value === 'string'))
+	]);
+	const categoryIndex = $derived(new Map(categories.map((name, index) => [name, index])));
+	/** An x value as a number: a date is its time, and a category is its index. */
+	function toX(value: XValue): number {
+		return typeof value === 'string' ? (categoryIndex.get(value) ?? NaN) : +value;
+	}
+	const xValues = $derived(rawX.map(toX));
+	const yValues = $derived([...rootValues.ys, ...extents.flatMap((e) => e.y ?? [])]);
+	const firstX = $derived(rawX[0]);
 
 	/** About one tick for each 80 pixels of a horizontal axis, and each 40 of a vertical one. */
 	function tickCount(range: readonly [number, number], spacing: number) {
@@ -136,25 +146,33 @@
 		values: number[],
 		range: [number, number],
 		count: number,
-		niceDefault: boolean
+		defaults: { nice: boolean; zero: boolean }
 	): Scale {
 		const type = options?.type ?? scaleLinear;
 		const given = options?.domain;
-		const domain: [number, number] = given
+		let domain: [number, number] = given
 			? [+given[0], +given[1]]
 			: values.length
 				? [Math.min(...values), Math.max(...values)]
 				: [0, 1];
-		const scale = type(domain, range);
-		return (options?.nice ?? niceDefault) ? type(scale.nice(count), range) : scale;
+		if (!given && (options?.zero ?? defaults.zero)) {
+			domain = [Math.min(domain[0], 0), Math.max(domain[1], 0)];
+		}
+		const settings = { categories, padding: options?.padding };
+		const scale = type(domain, range, settings);
+		return (options?.nice ?? defaults.nice) ? type(scale.nice(count), range, settings) : scale;
 	}
 
 	const xRange = $derived<[number, number]>([margin.left, width - margin.right]);
 	const yRange = $derived<[number, number]>([height - margin.bottom, margin.top]);
 	const xCount = $derived(tickCount(xRange, 80));
 	const yCount = $derived(tickCount(yRange, 40));
-	const xScale = $derived(makeScale(xScaleOptions, xValues, xRange, xCount, false));
-	const yScale = $derived(makeScale(yScaleOptions, yValues, yRange, yCount, true));
+	const xScale = $derived(
+		makeScale(xScaleOptions, xValues, xRange, xCount, { nice: false, zero: false })
+	);
+	const yScale = $derived(
+		makeScale(yScaleOptions, yValues, yRange, yCount, { nice: true, zero: true })
+	);
 
 	$effect(() => {
 		if (dev && firstX instanceof Date && xScale.kind !== 'time') {
@@ -162,11 +180,23 @@
 				'Chart.Root: the x values are dates, but the x scale is not a time scale. Import `scaleTime` from "@human-kit/charts/scales/time" and give `xScale={{ type: scaleTime }}`.'
 			);
 		}
+		if (dev && typeof firstX === 'string' && xScale.kind !== 'band') {
+			console.warn(
+				'Chart.Root: the x values are categories, but the x scale is not a band scale. Import `scaleBand` from "@human-kit/charts/scales/band" and give `xScale={{ type: scaleBand }}`.'
+			);
+		}
 	});
 
 	function valueFormatter(scale: Scale, values: number[], format: ValueFormat | undefined) {
 		if (typeof format === 'function') {
-			return (value: number) => format(scale.kind === 'time' ? new Date(value) : value);
+			return (value: number) =>
+				format(
+					scale.kind === 'time'
+						? new Date(value)
+						: scale.kind === 'band'
+							? categories[value]
+							: value
+				);
 		}
 		return scale.valueFormat(values, locale, format);
 	}
@@ -192,7 +222,7 @@
 
 	/** The accessible name of a point: the x value, the series and the y value. */
 	function pointLabel(point: ChartPoint) {
-		const parts = [xValueFormat(+point.x)];
+		const parts = [xValueFormat(toX(point.x))];
 		if (point.series) parts.push(point.series);
 		parts.push(yValueFormat(point.y));
 		return parts.join(', ');
@@ -241,7 +271,7 @@
 				return;
 			}
 			const next = move(
-				entries.map((e) => e.points.map((p) => +p.x)),
+				entries.map((e) => e.points.map((p) => toX(p.x))),
 				positions.get(id)!,
 				event.key
 			);
@@ -336,9 +366,10 @@
 		set titleId(value) {
 			titleId = value;
 		},
-		register(read, own) {
+		toX,
+		register(read, extent) {
 			const id = `m${markCount++}`;
-			marks.set(id, { read, own });
+			marks.set(id, { read, extent });
 			return { id, unregister: () => marks.delete(id) };
 		},
 		point(mark, s, index, point) {
