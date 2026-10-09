@@ -1,0 +1,74 @@
+<script lang="ts">
+	import { Chart, type ChartPoint } from '$lib/index.js';
+
+	type Row = { year: number; region: string; revenue: number };
+	const regions = ['North', 'South', 'East'];
+	const data: Row[] = regions.flatMap((region, r) =>
+		Array.from({ length: 12 }, (_, i) => ({
+			year: 2014 + i,
+			region,
+			revenue: Math.round(40 + r * 15 + i * (3 + r) + Math.sin(i + r) * 8)
+		}))
+	);
+
+	let focused: ChartPoint<Row> | null = $state(null);
+	let selected: ChartPoint<Row> | null = $state(null);
+</script>
+
+<main>
+	<h1>Playground</h1>
+	<p>Tab into the chart. The arrows move the focus. Enter selects a point.</p>
+
+	<Chart.Root
+		{data}
+		x="year"
+		y="revenue"
+		series="region"
+		height={320}
+		bind:focused
+		onSelect={(point) => (selected = point)}
+		class="chart"
+	>
+		<Chart.Title>Revenue per region, 2014 to 2025</Chart.Title>
+		<Chart.Plot>
+			<Chart.Line />
+		</Chart.Plot>
+	</Chart.Root>
+
+	<p>Focused: {focused ? `${focused.datum.region} ${focused.datum.year}` : 'none'}</p>
+	<p>Selected: {selected ? `${selected.datum.region} ${selected.datum.year}` : 'none'}</p>
+</main>
+
+<style>
+	main {
+		max-width: 48rem;
+		margin: 2rem auto;
+		padding: 0 1rem;
+		font-family: system-ui, sans-serif;
+	}
+	:global(.chart) {
+		margin: 0;
+	}
+	:global(.chart [data-series='North']) {
+		color: #2563eb;
+	}
+	:global(.chart [data-series='South']) {
+		color: #d97706;
+	}
+	:global(.chart [data-series='East']) {
+		color: #059669;
+	}
+	:global(.chart [data-line]) {
+		stroke-width: 2;
+	}
+	:global(.chart [data-point]) {
+		outline: none;
+	}
+	:global(.chart [data-point][data-focused]) {
+		r: 6;
+	}
+	:global(.chart [data-point][data-focus-visible]) {
+		stroke: CanvasText;
+		stroke-width: 2;
+	}
+</style>
