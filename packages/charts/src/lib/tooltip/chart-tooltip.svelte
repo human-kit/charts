@@ -30,17 +30,19 @@
 	}
 
 	const tip = $derived.by(() => {
-		const point = ctx.pointAt(id);
-		if (!point || !id) return null;
-		const entry = ctx.entries.find((e) => e.points.includes(point));
-		const anchor = entry && ctx.anchor(entry.mark, entry.series, entry.points.indexOf(point));
+		const found = ctx.locate(id);
+		if (!found) return null;
+		const { entry, index } = found;
+		const point = entry.points[index];
+		const anchor = ctx.anchor(entry.mark, entry.series, index);
 		if (!anchor) return null;
 		return {
 			point,
 			x: anchor[0],
 			y: anchor[1],
 			xText: ctx.formatX(ctx.toX(point.x)),
-			yText: ctx.formatY(point.y)
+			yText: ctx.formatY(ctx.toY(point.y)),
+			horizontal: entry.horizontal
 		};
 	});
 
@@ -109,10 +111,11 @@
 		{#if children}
 			{@render children(tip)}
 		{:else}
-			<div data-tooltip-x="">{tip.xText}</div>
-			<div data-tooltip-y="">
+			<!-- The category or the x value first, then the series and the value. -->
+			<div data-tooltip-key="">{tip.horizontal ? tip.yText : tip.xText}</div>
+			<div data-tooltip-value="">
 				{#if tip.point.series}<span data-tooltip-series="">{tip.point.series}</span>{/if}
-				{tip.yText}
+				{tip.horizontal ? tip.xText : tip.yText}
 			</div>
 		{/if}
 	</div>

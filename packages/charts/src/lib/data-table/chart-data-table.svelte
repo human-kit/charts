@@ -6,15 +6,19 @@
 	let {
 		visibility = 'screen-reader',
 		caption,
-		xHeader,
+		rowHeader,
 		class: className = '',
 		...restProps
 	}: ChartDataTableProps = $props();
 
 	const ctx = useChartContext('Chart.DataTable');
 
-	// A row per x value and a column per series. Two marks with one series name make one column.
+	// The rows follow the axis of the categories: x, or y for a mark with horizontal bars.
+	const horizontal = $derived(ctx.marks[0]?.horizontal?.() ?? false);
+
+	// A row per key value and a column per series. Two marks with one series name make one column.
 	const table = $derived.by(() => {
+		const keyOf = (p: ChartPoint) => (horizontal ? ctx.toY(p.y) : ctx.toX(p.x));
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a scratch map for one pass.
 		const columns = new Map<string, Map<number, ChartPoint>>();
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a scratch set for one pass.
@@ -22,7 +26,7 @@
 		for (const mark of ctx.marks) {
 			for (const s of mark.read()) {
 				if (columns.has(s.name)) continue;
-				const cells = new Map(s.points.map((p) => [ctx.toX(p.x), p]));
+				const cells = new Map(s.points.map((p) => [keyOf(p), p]));
 				columns.set(s.name, cells);
 				for (const key of cells.keys()) keys.add(key);
 			}
@@ -31,17 +35,21 @@
 		const rows = [...keys]
 			.sort((a, b) => a - b)
 			.map((key) => ({
-				header: ctx.formatX(key),
-				cells: names.map((name) => {
-					const point = columns.get(name)!.get(key);
-					return point ? ctx.formatY(point.y) : '';
-				})
+				header: horizontal ? ctx.formatY(key) : ctx.formatX(key),
+				cells: names.map((name) => columns.get(name)!.get(key))
 			}));
 		return { names, rows };
 	});
 
-	// One series without a name has the name of the y channel as its column header.
-	const headers = $derived(table.names.map((name) => name || channelName(ctx.y, 'y')));
+	function text(point: ChartPoint | undefined) {
+		if (!point) return '';
+		return horizontal ? ctx.formatX(ctx.toX(point.x)) : ctx.formatY(ctx.toY(point.y));
+	}
+
+	// One series without a name has the name of the value channel as its column header.
+	const valueName = $derived(horizontal ? channelName(ctx.x, 'x') : channelName(ctx.y, 'y'));
+	const keyName = $derived(horizontal ? channelName(ctx.y, 'y') : channelName(ctx.x, 'x'));
+	const headers = $derived(table.names.map((name) => name || valueName));
 	// Without a caption, the title of the chart names the table.
 	const labelledBy = $derived(caption ? undefined : (ctx.titleId ?? undefined));
 
@@ -61,7 +69,7 @@
 	{#if caption}<caption>{caption}</caption>{/if}
 	<thead>
 		<tr>
-			<th scope="col">{xHeader ?? channelName(ctx.x, 'x')}</th>
+			<th scope="col">{rowHeader ?? keyName}</th>
 			{#each headers as header, i (i)}
 				<th scope="col">{header}</th>
 			{/each}
@@ -71,8 +79,9 @@
 		{#each table.rows as row, r (r)}
 			<tr>
 				<th scope="row">{row.header}</th>
-				{#each row.cells as cell, i (i)}
-					<td>{cell}</td>
+				{#each row.cells as point, i (i)}
+					{@const current = point && ctx.isSelected(point) ? 'true' : undefined}
+					<td aria-current={current} data-selected={current}>{text(point)}</td>
 				{/each}
 			</tr>
 		{/each}

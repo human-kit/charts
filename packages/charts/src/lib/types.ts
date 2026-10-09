@@ -7,7 +7,7 @@ import type {
 	ChartPoint,
 	ChartTick,
 	ChartTooltipState,
-	XValue
+	ChartValue
 } from './root/context.js';
 import type { FormatOptions, Scale, ScaleType } from './scales/types.js';
 
@@ -21,7 +21,7 @@ export type {
 	Scale,
 	ScaleType,
 	ChartTooltipState,
-	XValue
+	ChartValue
 };
 
 /** The settings of the scale of an axis. */
@@ -33,11 +33,12 @@ export type ScaleOptions = {
 	type?: ScaleType;
 	/** The values at the two ends. Without it, the root uses the smallest and the largest value. */
 	domain?: [number | Date, number | Date];
-	/** Extends the domain to round values. The default is `true` for y and `false` for x. */
+	/** Extends the domain to round values. The default is the same as for `zero`. */
 	nice?: boolean;
 	/**
-	 * Extends the domain to include zero. The default is `true` for y and `false` for x. A bar
-	 * starts at zero, thus a bar chart needs it.
+	 * Extends the domain to include zero. A bar starts at zero, thus a bar chart needs it. The
+	 * default is `true` for the value axis of a chart with categories on the other axis, and for y
+	 * when no axis has categories.
 	 */
 	zero?: boolean;
 	/** The space between two bands of a band scale, as a fraction of a step. The default is 0.2. */
@@ -48,7 +49,7 @@ export type ScaleOptions = {
  * The format of the values of a channel: the options of `Intl.NumberFormat` or
  * `Intl.DateTimeFormat`, or a function that writes the text.
  */
-export type ValueFormat = FormatOptions | ((value: XValue) => string);
+export type ValueFormat = FormatOptions | ((value: ChartValue) => string);
 
 export type ChartRootProps<T> = {
 	/** A stable id, from which the component makes its internal ids. Give one on a server. */
@@ -56,9 +57,9 @@ export type ChartRootProps<T> = {
 	/** The rows. Each mark uses them when it has no `data` of its own. */
 	data?: readonly T[];
 	/** The x channel: a field name of the row, or a function of the row. */
-	x?: Channel<T, XValue>;
+	x?: Channel<T, ChartValue>;
 	/** The y channel: a field name of the row, or a function of the row. */
-	y?: Channel<T, number>;
+	y?: Channel<T, ChartValue>;
 	/** The channel that divides the rows into series. Without it, the chart has one series. */
 	series?: Channel<T, string>;
 	/** The x scale. */
@@ -76,7 +77,14 @@ export type ChartRootProps<T> = {
 	 * writes it; it does not read it.
 	 */
 	focused?: ChartPoint<T> | null;
-	/** The component calls it when the user selects a point with `Enter`, `Space` or a click. */
+	/**
+	 * The selected point, or `null`. You can bind it with `bind:selected`. `Enter`, `Space` or a
+	 * click selects a point, and a second time clears the selection. The selected point has
+	 * `aria-current="true"` and `data-selected`, and so has its cell in `Chart.DataTable`. The
+	 * selection follows the row index and the series of the point.
+	 */
+	selected?: ChartPoint<T> | null;
+	/** The component calls it when the user activates a point with `Enter`, `Space` or a click. */
 	onSelect?: (point: ChartPoint<T>) => void;
 	/** The locale of the values in the names and the ticks. The default is the locale of the page. */
 	locale?: string;
@@ -124,9 +132,9 @@ export type ChartLineProps<T> = {
 	/** The rows of this mark. Without it, the mark uses the data of the root. */
 	data?: readonly T[];
 	/** The x channel of this mark. Without it, the mark uses the channel of the root. */
-	x?: Channel<T, XValue>;
+	x?: Channel<T, ChartValue>;
 	/** The y channel of this mark. Without it, the mark uses the channel of the root. */
-	y?: Channel<T, number>;
+	y?: Channel<T, ChartValue>;
 	/** The series channel of this mark. Without it, the mark uses the channel of the root. */
 	series?: Channel<T, string>;
 	/** The radius of the point of each row, in pixels. The default is 3. */
@@ -192,8 +200,11 @@ export type ChartDataTableProps = Omit<HTMLAttributes<HTMLTableElement>, 'class'
 	visibility?: 'visible' | 'screen-reader';
 	/** The caption of the table. Without it, the `Chart.Title` names the table. */
 	caption?: string;
-	/** The header of the column of the x values. The default is the name of the x field. */
-	xHeader?: string;
+	/**
+	 * The header of the first column: the column of the categories, or of the x values. The default
+	 * is the name of the field.
+	 */
+	rowHeader?: string;
 	/** The CSS class names of the table. */
 	class?: string;
 };

@@ -127,7 +127,8 @@ tooltip, data table) go next to it, because HTML cannot be in an SVG.
 | `width`, `height`               | The size in pixels. Without `width`, the chart follows the width of its container.   |
 | `margin`                        | The space around the plot. Without it, the root measures the axis labels.            |
 | `focused`                       | The point that has the focus, or `null`. You can bind it with `bind:focused`.        |
-| `onSelect(point)`               | The root calls it when the user selects a point with `Enter`, `Space` or a click.    |
+| `selected`                      | The selected point, or `null`. You can bind it with `bind:selected`.                 |
+| `onSelect(point)`               | The root calls it when the user activates a point with `Enter`, `Space` or a click.  |
 | `locale`                        | The locale of the values in names, ticks, the tooltip and the data table.            |
 | `xFormat`, `yFormat`            | The format of the values of each channel: `Intl` options, or a function.             |
 | `aria-label`, `aria-labelledby` | The accessible name of the chart. One of the two, or a `Chart.Title`, is necessary.  |
@@ -190,11 +191,11 @@ days, hours, minutes and seconds). It makes its labels with
 
 ### Marks
 
-| Part         | Description                                                                                                        |
-| ------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `Chart.Line` | Makes one `<path>` per series, and one focus target per point.                                                     |
-| `Chart.Area` | Makes one filled `<path>` per series. `stacked` puts the series one on the other. The points show only on focus.   |
-| `Chart.Bar`  | Makes one `<rect>` per row. `layout` is `grouped` or `stacked`. `orientation` is vertical or horizontal (planned). |
+| Part         | Description                                                                                                      |
+| ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `Chart.Line` | Makes one `<path>` per series, and one focus target per point.                                                   |
+| `Chart.Area` | Makes one filled `<path>` per series. `stacked` puts the series one on the other. The points show only on focus. |
+| `Chart.Bar`  | Makes one `<rect>` per row. `layout` is `grouped` or `stacked`. Categories on y make horizontal bars.            |
 
 A row without a finite value is a gap in the line. It is not a focus target.
 In the data table, its cell is empty.
@@ -246,8 +247,21 @@ The keys do not wrap: at the last point of a series, `ArrowRight` does nothing.
 The horizontal arrows follow the direction of the x axis on the screen, not the
 text direction. A chart does not reverse its x axis in a right-to-left page.
 
-For `Chart.Bar` with a horizontal orientation, the vertical arrows move in the
-series and the horizontal arrows move between the series.
+For a mark with its categories on the y axis (horizontal bars), the vertical
+arrows move in the series and the horizontal arrows move between the series.
+The name of a point, a row of the data table and the tooltip start with the
+category.
+
+### Selection
+
+- `Enter`, `Space` or a click selects the point. A second time clears the
+  selection. `bind:selected` holds the point.
+- The selected point has `aria-current="true"` and `data-selected`. Its cell
+  in `Chart.DataTable` has the same attributes.
+- The selection follows the row index and the series of the point, not the
+  identity of the row. A parent that holds `selected` in a `$state` gets a
+  proxy of the row, and a proxy is not equal to the row.
+- In version 1, the table does not change the selection: it shows it.
 
 ### Focus
 
@@ -278,7 +292,7 @@ series and the horizontal arrows move between the series.
   `<caption>`, and `scope` on the header cells.
 - `visibility` is `visible` or `screen-reader`. With `screen-reader`, the table
   is in the accessibility tree but not on the screen.
-- A row of the table and a point of the chart share the selection.
+- The cell of the selected point has `aria-current="true"`.
 
 ### Other requirements
 
@@ -349,7 +363,7 @@ The prototype answers the open questions before the full implementation:
 Steps 1 and 2 are complete (2026-10-09).
 
 - `Chart.Root`, `Chart.Title`, `Chart.Plot`, `Chart.Line`, `Chart.Area`,
-  `Chart.Bar` (vertical, grouped and stacked), `Chart.Axis`, `Chart.Grid`,
+  `Chart.Bar` (vertical and horizontal, grouped and stacked), `Chart.Axis`, `Chart.Grid`,
   `Chart.Legend`, `Chart.Tooltip`, `Chart.DataTable`, and the linear, time and
   band scales are in `packages/charts`.
 - Each part holds its own logic. The legend, the tooltip and the data table
@@ -359,10 +373,10 @@ Steps 1 and 2 are complete (2026-10-09).
 
   | Chart                                                     | Size    |
   | --------------------------------------------------------- | ------- |
-  | A line with the keyboard operation                        | 4.81 kB |
-  | A line on a time scale, two axes and a grid               | 6.92 kB |
-  | Stacked bars on a band scale, axes and grid               | 6.37 kB |
-  | Stacked areas, axes, grid, legend, tooltip and data table | 9.25 kB |
+  | A line with the keyboard operation                        | 5.09 kB |
+  | A line on a time scale, two axes and a grid               | 7.21 kB |
+  | Stacked bars on a band scale, axes and grid               | 6.84 kB |
+  | Stacked areas, axes, grid, legend, tooltip and data table | 9.66 kB |
 
   The support for categories in the root adds about 0.2 kB to each chart.
 

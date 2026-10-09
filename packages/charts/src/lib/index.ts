@@ -35,6 +35,6 @@ export type {
 	ScaleOptions,
 	ScaleType,
 	ValueFormat,
-	XValue
+	ChartValue
 } from './types.js';
 export { getChartContext, useChartContext } from './root/context.js';

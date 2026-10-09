@@ -1,13 +1,14 @@
 <script lang="ts" generics="T">
 	import { untrack } from 'svelte';
-	import { read, type Channel } from '../internal/channel.js';
+	import type { Channel } from '../internal/channel.js';
+	import { groupRows, stackKey } from '../internal/series.js';
 	import { areaPath, linePath, round } from '../internal/path.js';
 	import { stack } from '../internal/stack.js';
 	import {
 		useChartContext,
 		type ChartPoint,
 		type ChartSeries,
-		type XValue
+		type ChartValue
 	} from '../root/context.js';
 	import type { ChartAreaProps } from '../types.js';
 
@@ -24,38 +25,20 @@
 
 	const ctx = useChartContext('Chart.Area');
 
-	const groups = $derived.by(() => {
-		const rows = (data ?? ctx.data) as readonly T[];
-		const xc = (x ?? ctx.x) as Channel<T, XValue> | undefined;
-		const yc = (y ?? ctx.y) as Channel<T, number> | undefined;
-		const sc = (series ?? ctx.series) as Channel<T, string> | undefined;
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a scratch map for one pass.
-		const out = new Map<string, ChartPoint<T>[]>();
-		if (!xc || !yc) return [] as ChartSeries<T>[];
-		rows.forEach((datum, index) => {
-			const point = {
-				datum,
-				index,
-				series: sc ? String(read(sc, datum, index)) : '',
-				x: read(xc, datum, index),
-				y: Number(read(yc, datum, index))
-			};
-			const xOk = typeof point.x === 'string' || Number.isFinite(+point.x);
-			if (!xOk || !Number.isFinite(point.y)) return;
-			let points = out.get(point.series);
-			if (!points) out.set(point.series, (points = []));
-			points.push(point);
-		});
-		return [...out].map(([name, points]) => ({ name, points }));
-	});
-
-	const key = (value: XValue) => (typeof value === 'string' ? value : +value);
+	const groups = $derived(
+		groupRows(
+			(data ?? ctx.data) as readonly T[],
+			(x ?? ctx.x) as Channel<T, ChartValue> | undefined,
+			(y ?? ctx.y) as Channel<T, ChartValue> | undefined,
+			(series ?? ctx.series) as Channel<T, string> | undefined
+		)
+	);
 
 	// The bottom and the top of the area at each point, in data values.
 	const spans = $derived(
 		stacked
-			? stack(groups.map((s) => s.points.map((p) => ({ key: key(p.x), y: p.y }))))
-			: groups.map((s) => s.points.map((p): [number, number] => [0, p.y]))
+			? stack(groups.map((s) => s.points.map((p) => ({ key: stackKey(p.x), y: +p.y }))))
+			: groups.map((s) => s.points.map((p): [number, number] => [0, +p.y]))
 	);
 
 	/** The value on the y scale nearest to `value`: an area does not go below the plot. */
