@@ -118,49 +118,87 @@ tooltip, data table) go next to it, because HTML cannot be in an SVG.
 
 ### `Chart.Root`
 
-| Prop                            | Description                                                                                |
-| ------------------------------- | ------------------------------------------------------------------------------------------ |
-| `data: T[]`                     | The rows. Each mark uses them when it has no `data` of its own.                            |
-| `x`, `y`                        | The channels of the two axes: a field name of `T`, or a function of the row.               |
-| `series`                        | The channel that divides the rows into series. Without it, the chart has one series.       |
-| `xScale`, `yScale`              | The scale of each axis. Without it, the root infers the scale from the values (see below). |
-| `width`, `height`               | The size in pixels. Without `width`, the chart follows the width of its container.         |
-| `margin`                        | The space around the plot. Without it, the root measures the axis labels.                  |
-| `focused`                       | The point that has the focus, or `null`. You can bind it with `bind:focused`.              |
-| `onSelect(point)`               | The root calls it when the user selects a point with `Enter`, `Space` or a click.          |
-| `locale`, `formatOptions`       | The format of the values in names, the tooltip and the data table.                         |
-| `aria-label`, `aria-labelledby` | The accessible name of the chart. One of the two, or a `Chart.Title`, is necessary.        |
-| `aria-describedby`              | The id of an element that describes the chart, for example a summary of the trend.         |
-| `class`, `element`, `context`   | The same as in `@human-kit/ui`.                                                            |
+| Prop                            | Description                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------ |
+| `data: T[]`                     | The rows. Each mark uses them when it has no `data` of its own.                      |
+| `x`, `y`                        | The channels of the two axes: a field name of `T`, or a function of the row.         |
+| `series`                        | The channel that divides the rows into series. Without it, the chart has one series. |
+| `xScale`, `yScale`              | The type, the domain and the rounding of the scale of each axis (see below).         |
+| `width`, `height`               | The size in pixels. Without `width`, the chart follows the width of its container.   |
+| `margin`                        | The space around the plot. Without it, the root measures the axis labels.            |
+| `focused`                       | The point that has the focus, or `null`. You can bind it with `bind:focused`.        |
+| `selected`                      | The selected point, or `null`. You can bind it with `bind:selected`.                 |
+| `onSelect(point)`               | The root calls it when the user activates a point with `Enter`, `Space` or a click.  |
+| `locale`                        | The locale of the values in names, ticks, the tooltip and the data table.            |
+| `xFormat`, `yFormat`            | The format of the values of each channel: `Intl` options, or a function.             |
+| `aria-label`, `aria-labelledby` | The accessible name of the chart. One of the two, or a `Chart.Title`, is necessary.  |
+| `aria-describedby`              | The id of an element that describes the chart, for example a summary of the trend.   |
+| `class`, `element`, `context`   | The same as in `@human-kit/ui`.                                                      |
 
 A mark can replace the `data`, `x`, `y` and `series` of the root with its own
 props. Thus one chart can show a line of sales and a rule at each campaign date.
 
-### Scale inference
+### Scales
 
-| Values of the channel | Scale    |
-| --------------------- | -------- |
-| `number`              | `linear` |
-| `Date`                | `time`   |
-| `string`              | `band`   |
+The default scale is linear. For another scale, import its function from its
+subpath and give it as `type`:
 
-A `xScale` or `yScale` prop replaces the inferred scale, for example
-`yScale={{ type: 'linear', domain: [0, 100], nice: true }}`.
+```svelte
+<script lang="ts">
+	import { scaleTime } from '@human-kit/charts/scales/time';
+</script>
 
-Each scale is also a pure function on its own subpath, for example
-`@human-kit/charts/scales/linear`. The time scale makes its tick labels with
-`Intl.DateTimeFormat`. It does not include a calendar library.
+<Chart.Root {data} x="date" y="value" xScale={{ type: scaleTime }} yScale={{ domain: [0, 100] }}>
+```
+
+| Scale    | Subpath                           | Values                |
+| -------- | --------------------------------- | --------------------- |
+| `linear` | `@human-kit/charts/scales/linear` | `number`              |
+| `time`   | `@human-kit/charts/scales/time`   | `Date`                |
+| `band`   | `@human-kit/charts/scales/band`   | `string` (categories) |
+
+The root does not choose the scale from the values. A choice from the values
+puts all of the scales in each bundle, also in a chart without dates: the time
+scale adds about 0.9 kB gzip. In a development build, the root writes a warning
+when the x values are dates and the x scale is not a time scale, or when they are
+strings and the x scale is not a band scale.
+
+The y scale includes zero by default (`zero: true`), and a bar needs it. Give
+`yScale={{ zero: false }}` for a line that must fill the plot. The rule is
+on the scale and not on the mark, because a server cannot see a mark that is
+after a guide (see "Size and rendering on a server").
+
+A band scale gives one band per category, in the order of the first appearance
+in the data. The scale gives the middle of a band, and `bandwidth` gives its
+width. `padding` is the space between two bands, as a fraction of a step. The
+default is 0.2.
+
+Each scale is also a pure function that you can use without a chart. The time
+scale puts its ticks at calendar boundaries (years, quarters, months, Sundays,
+days, hours, minutes and seconds). It makes its labels with
+`Intl.DateTimeFormat`, and it does not include a calendar library.
+
+### Formats
+
+- A tick label shows only the largest calendar field that changes at the tick:
+  "2020", "Mar", "Mar 5", "9:00 AM".
+- The name of a point shows the value in full. A time scale chooses the
+  precision from the data: dates that are all on the first of January show as
+  "2015", and dates in the middle of a month show as "Feb 3, 2015".
+- `xFormat` and `yFormat` replace the format of the names and of the ticks.
+  They are the options of `Intl.NumberFormat` or `Intl.DateTimeFormat`, or a
+  function that receives the number or the date and returns the text.
 
 ### Marks
 
-| Part         | Description                                                                                              |
-| ------------ | -------------------------------------------------------------------------------------------------------- |
-| `Chart.Line` | Makes one `<path>` per series, and one focus target per point.                                           |
-| `Chart.Area` | Makes one filled `<path>` per series. `stack` puts the series one on the other.                          |
-| `Chart.Bar`  | Makes one `<rect>` per row. `layout` is `grouped` or `stacked`. `orientation` is vertical or horizontal. |
+| Part         | Description                                                                                                      |
+| ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `Chart.Line` | Makes one `<path>` per series, and one focus target per point.                                                   |
+| `Chart.Area` | Makes one filled `<path>` per series. `stacked` puts the series one on the other. The points show only on focus. |
+| `Chart.Bar`  | Makes one `<rect>` per row. `layout` is `grouped` or `stacked`. Categories on y make horizontal bars.            |
 
-A row without a finite value is a gap in the line. It is not a focus target,
-but the data table shows it.
+A row without a finite value is a gap in the line. It is not a focus target.
+In the data table, its cell is empty.
 
 ### Guides
 
@@ -209,8 +247,21 @@ The keys do not wrap: at the last point of a series, `ArrowRight` does nothing.
 The horizontal arrows follow the direction of the x axis on the screen, not the
 text direction. A chart does not reverse its x axis in a right-to-left page.
 
-For `Chart.Bar` with a horizontal orientation, the vertical arrows move in the
-series and the horizontal arrows move between the series.
+For a mark with its categories on the y axis (horizontal bars), the vertical
+arrows move in the series and the horizontal arrows move between the series.
+The name of a point, a row of the data table and the tooltip start with the
+category.
+
+### Selection
+
+- `Enter`, `Space` or a click selects the point. A second time clears the
+  selection. `bind:selected` holds the point.
+- The selected point has `aria-current="true"` and `data-selected`. Its cell
+  in `Chart.DataTable` has the same attributes.
+- The selection follows the row index and the series of the point, not the
+  identity of the row. A parent that holds `selected` in a `$state` gets a
+  proxy of the row, and a proxy is not equal to the row.
+- In version 1, the table does not change the selection: it shows it.
 
 ### Focus
 
@@ -241,7 +292,7 @@ series and the horizontal arrows move between the series.
   `<caption>`, and `scope` on the header cells.
 - `visibility` is `visible` or `screen-reader`. With `screen-reader`, the table
   is in the accessibility tree but not on the screen.
-- A row of the table and a point of the chart share the selection.
+- The cell of the selected point has `aria-current="true"`.
 
 ### Other requirements
 
@@ -258,14 +309,23 @@ series and the horizontal arrows move between the series.
 - The root makes the SVG on the server with the `width` prop, or with a default
   width of 640 pixels. After the mount, it measures the container with a
   `ResizeObserver`.
-- The margins come from the measured size of the tick labels after the mount.
-  On the server, the root uses default margins.
+- Each axis measures its labels after the mount, and asks the root for the
+  space. The margin of a side is the largest space that an axis asks for. A
+  change below one pixel does not count, thus the measures stop.
+- On a server, a `$derived` value keeps the value of its first read, and the
+  parts read the values in markup order. Thus:
+  - The root makes its domains from its own `data` and channels, which are
+    complete before the first part starts. A chart with only root data has the
+    correct scales on the server, in all orders of the parts.
+  - A mark with its own `data` or channels, and a stacked `Chart.Bar`, add
+    values when they start. On the server, the parts before them do not see the
+    values: a grid before a stack has the domain of one bar. Give the domain, or
+    put the mark before the guides.
+  - The margins on the server are the minimum margins, because the guides
+    before an axis do not know that axis. The labels of the axes are clipped
+    until the first measure in the browser.
 - The chart does not move after the mount when the consumer gives `width` and
-  `margin`.
-- A mark adds its data to the scales when it starts. On the server, a mark
-  that comes later in the markup cannot change the scales of the marks before
-  it. A mark with its own `data` must thus be after the other marks, or the
-  consumer must give the domain.
+  `margin`. Give `margin` for a page that the server makes.
 
 ## Repository layout
 
@@ -302,17 +362,36 @@ The prototype answers the open questions before the full implementation:
 
 Steps 1 and 2 are complete (2026-10-09).
 
-- `Chart.Root`, `Chart.Title`, `Chart.Plot`, `Chart.Line` and the linear scale
-  are in `packages/charts`. 18 tests pass in a browser, and 1 test passes on the server.
-- Size of a line chart with the keyboard operation: 3.78 kB gzip, 8.99 kB
-  minified, without the Svelte runtime.
-- Two problems that the prototype found:
-  1. The names use one number format for all of the values. A year shows as
-     "2,014". Each channel needs its own format, and the time scale must format
-     dates.
+- `Chart.Root`, `Chart.Title`, `Chart.Plot`, `Chart.Line`, `Chart.Area`,
+  `Chart.Bar` (vertical and horizontal, grouped and stacked), `Chart.Axis`, `Chart.Grid`,
+  `Chart.Legend`, `Chart.Tooltip`, `Chart.DataTable`, and the linear, time and
+  band scales are in `packages/charts`.
+- Each part holds its own logic. The legend, the tooltip and the data table
+  read the marks through the context, thus a chart without them does not
+  include their code.
+- Sizes from `pnpm size`, gzip, without the Svelte runtime:
+
+  | Chart                                                     | Size    |
+  | --------------------------------------------------------- | ------- |
+  | A line with the keyboard operation                        | 5.09 kB |
+  | A line on a time scale, two axes and a grid               | 7.21 kB |
+  | Stacked bars on a band scale, axes and grid               | 6.84 kB |
+  | Stacked areas, axes, grid, legend, tooltip and data table | 9.66 kB |
+
+  The support for categories in the root adds about 0.2 kB to each chart.
+
+- Problems that the prototype found:
+  1. The names used one number format for all of the values, thus a year
+     showed as "2,014". Fixed: each channel has its own format, and the time
+     scale writes dates.
   2. `ArrowDown` moves to the next series in the order of the data, not to the
      series below on the screen. When the lines cross, the order on the screen
-     changes from one x value to the next.
+     changes from one x value to the next. See open question 3.
+  3. On a server, a `$derived` value does not change after its first read. See
+     "Size and rendering on a server".
+  4. A key press before the hydration does nothing: the point has the focus,
+     but no handler is on it yet. The page must not hold a server markup for
+     a long time before the hydration.
 
 ## Open questions
 

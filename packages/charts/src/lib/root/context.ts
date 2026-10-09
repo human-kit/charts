@@ -1,6 +1,9 @@
 import { getContext, setContext } from 'svelte';
 import type { Channel } from '../internal/channel.js';
-import type { LinearScale } from '../scales/linear.js';
+import type { Scale } from '../scales/types.js';
+
+/** A value of a channel: a number, a date, or a category of a band scale. */
+export type ChartValue = number | Date | string;
 
 /** One point of the chart, as the focus state and `onSelect` give it. */
 export type ChartPoint<T = unknown> = {
@@ -11,15 +14,71 @@ export type ChartPoint<T = unknown> = {
 	/** The name of the series. It is empty when the chart has one series. */
 	series: string;
 	/** The value of the x channel. */
-	x: number;
+	x: ChartValue;
 	/** The value of the y channel. */
+	y: ChartValue;
+};
+
+/** The values that a mark adds to the domains of the scales. */
+export type ChartExtent = { x?: ChartValue[]; y?: ChartValue[] };
+
+/** The state of the tooltip. */
+export type ChartTooltipState<T = unknown> = {
+	point: ChartPoint<T>;
+	/** The position of the point in the plot, in pixels. */
+	x: number;
 	y: number;
+	/** The x value as text. */
+	xText: string;
+	/** The y value as text. */
+	yText: string;
+	/**
+	 * Whether the categories of the mark are on the y axis, as in a horizontal bar chart. Then
+	 * `yText` names the category and `xText` is the value.
+	 */
+	horizontal: boolean;
 };
 
 /** The points of one series of a mark. */
 export type ChartSeries<T = unknown> = {
 	name: string;
 	points: ChartPoint<T>[];
+};
+
+/** A mark, as it registers with the root. */
+export type ChartMark = {
+	/** The series of the mark. */
+	read: () => ChartSeries[];
+	/**
+	 * The values that the domains must include in addition to the data of the root: the data of a
+	 * mark with data or channels of its own, or the tops of a stack.
+	 */
+	extent?: () => ChartExtent;
+	/** The position in pixels where the tooltip of a point points. */
+	anchor: (series: number, index: number) => [number, number];
+	/**
+	 * Whether the categories of the mark are on the y axis. Then the vertical arrows move in a
+	 * series, and a name and a table row start with the y value.
+	 */
+	horizontal?: () => boolean;
+};
+
+/** One series of a mark with points, in the order of the keyboard. */
+export type ChartEntry = {
+	mark: string;
+	series: number;
+	points: ChartPoint[];
+	horizontal: boolean;
+};
+
+/** A tick of an axis. */
+export type ChartTick = {
+	/** The value, as a number. A date is its time in milliseconds. */
+	value: number;
+	/** The position on the axis, in pixels. */
+	position: number;
+	/** The text of the label. */
+	label: string;
 };
 
 /** The space around the plot, in pixels. */
@@ -31,8 +90,10 @@ export type PointAttributes = {
 	role: 'img';
 	tabindex: 0 | -1;
 	'aria-label': string;
+	'aria-current': 'true' | undefined;
 	'data-focused': 'true' | undefined;
 	'data-focus-visible': 'true' | undefined;
+	'data-selected': 'true' | undefined;
 };
 
 // The channels of the root are typed by `Chart.Root`; the context does not know `T`.
@@ -41,21 +102,58 @@ export type ChartContext = {
 	/** The instance id. Every id of the parts is made from it. */
 	readonly instanceId: string;
 	readonly data: readonly any[];
-	readonly x: Channel<any, number> | undefined;
-	readonly y: Channel<any, number> | undefined;
+	readonly x: Channel<any, ChartValue> | undefined;
+	readonly y: Channel<any, ChartValue> | undefined;
 	readonly series: Channel<any, string> | undefined;
 	/** The size of the SVG, in pixels. */
 	readonly width: number;
 	readonly height: number;
 	readonly margin: ChartMargin;
-	readonly xScale: LinearScale;
-	readonly yScale: LinearScale;
+	readonly xScale: Scale;
+	readonly yScale: Scale;
+	/** The ticks of each axis. `Chart.Axis` and `Chart.Grid` share them. */
+	readonly xTicks: ChartTick[];
+	readonly yTicks: ChartTick[];
+	/**
+	 * Asks for space around the plot, for the labels of an axis. The margin of a side is the
+	 * largest space that a part asks for, unless the consumer gives the margin.
+	 */
+	reserve(needs: Partial<ChartMargin>): {
+		update(needs: Partial<ChartMargin>): void;
+		unregister(): void;
+	};
 	/** The id of the `Chart.Title` element, when one is in the DOM. */
 	titleId: string | null;
-	/** Adds a mark. `series` is read again each time the data changes. */
-	register(series: () => ChartSeries[]): { id: string; unregister(): void };
+	/** An x value as a number for the x scale: a date is its time, and a category is its index. */
+	toX(value: ChartValue): number;
+	/** A y value as a number for the y scale. */
+	toY(value: ChartValue): number;
+	/** Adds a mark. The root reads its functions again each time the data changes. */
+	register(mark: ChartMark): { id: string; unregister(): void };
+	/** The marks, in mount order. A part reads their series, for example a legend. */
+	readonly marks: ReadonlyArray<ChartMark>;
+	/** The series of all of the marks with points, in the order of the keyboard. */
+	readonly entries: ReadonlyArray<ChartEntry>;
+	/** The id of the element of a point. */
+	pointId(mark: string, series: number, index: number): string;
+	/** The point with the id, or `null`. */
+	pointAt(id: string | null): ChartPoint | null;
+	/** The entry and the index of the point with the id, or `null`. */
+	locate(id: string | null): { entry: ChartEntry; index: number } | null;
+	/** The position in pixels where the tooltip of a point points, from its mark. */
+	anchor(mark: string, series: number, index: number): [number, number] | null;
+	/** An x value (as a number for the x scale) as text, in the format of the chart. */
+	formatX(value: number): string;
+	/** A y value (as a number for the y scale) as text, in the format of the chart. */
+	formatY(value: number): string;
+	/** The point that has the focus, and whether it shows the focus ring. */
+	readonly focus: { id: string | null; visible: boolean };
+	/** Whether the point is the selected point. */
+	isSelected(point: ChartPoint): boolean;
+	/** The SVG element of `Chart.Plot`. */
+	plotElement: SVGSVGElement | null;
 	/** The attributes of the element of a point. */
-	point(mark: string, series: number, index: number): PointAttributes;
+	point(mark: string, series: number, index: number, point: ChartPoint): PointAttributes;
 	/** The accessible name and description of the chart, for the `Chart.Plot` element. */
 	readonly labels: {
 		'aria-label': string | undefined;

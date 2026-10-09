@@ -1,39 +1,47 @@
 <script lang="ts" generics="T">
-	import { read, type Channel } from '../internal/channel.js';
+	import { untrack } from 'svelte';
+	import type { Channel } from '../internal/channel.js';
 	import { linePath, round } from '../internal/path.js';
-	import { useChartContext, type ChartPoint, type ChartSeries } from '../root/context.js';
+	import { groupRows } from '../internal/series.js';
+	import {
+		useChartContext,
+		type ChartPoint,
+		type ChartSeries,
+		type ChartValue
+	} from '../root/context.js';
 	import type { ChartLineProps } from '../types.js';
 
 	let { data, x, y, series, r = 3, class: className = '' }: ChartLineProps<T> = $props();
 
 	const ctx = useChartContext('Chart.Line');
 
-	const groups = $derived.by(() => {
-		const rows = (data ?? ctx.data) as readonly T[];
-		const xc = (x ?? ctx.x) as Channel<T, number> | undefined;
-		const yc = (y ?? ctx.y) as Channel<T, number> | undefined;
-		const sc = (series ?? ctx.series) as Channel<T, string> | undefined;
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a scratch map for one pass.
-		const out = new Map<string, ChartPoint<T>[]>();
-		if (!xc || !yc) return [] as ChartSeries<T>[];
-		rows.forEach((datum, index) => {
-			const point = {
-				datum,
-				index,
-				series: sc ? String(read(sc, datum, index)) : '',
-				x: Number(read(xc, datum, index)),
-				y: Number(read(yc, datum, index))
-			};
-			// A point without a value is a gap in the line, and it takes no focus.
-			if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
-			let points = out.get(point.series);
-			if (!points) out.set(point.series, (points = []));
-			points.push(point);
-		});
-		return [...out].map(([name, points]) => ({ name, points }));
-	});
+	const groups = $derived(
+		groupRows(
+			(data ?? ctx.data) as readonly T[],
+			(x ?? ctx.x) as Channel<T, ChartValue> | undefined,
+			(y ?? ctx.y) as Channel<T, ChartValue> | undefined,
+			(series ?? ctx.series) as Channel<T, string> | undefined
+		)
+	);
 
-	const registration = ctx.register(() => groups as ChartSeries[]);
+	/** The position of a point in the plot. */
+	const at = (p: ChartPoint<T>): [number, number] => [
+		ctx.xScale(ctx.toX(p.x)),
+		ctx.yScale(ctx.toY(p.y))
+	];
+
+	// A mark with data or channels of its own adds its values to the domains.
+	const own = untrack(() => data !== undefined || x !== undefined || y !== undefined);
+	const registration = ctx.register({
+		read: () => groups as ChartSeries[],
+		extent: own
+			? () => ({
+					x: groups.flatMap((s) => s.points.map((p) => p.x)),
+					y: groups.flatMap((s) => s.points.map((p) => p.y))
+				})
+			: undefined,
+		anchor: (si, i) => at(groups[si].points[i])
+	});
 	$effect(() => registration.unregister);
 </script>
 
@@ -41,7 +49,7 @@
 	{#each groups as s, si (s.name)}
 		<g role="group" aria-label={s.name || undefined} data-series={s.name || undefined}>
 			<path
-				d={linePath(s.points.map((p) => [ctx.xScale(p.x), ctx.yScale(p.y)]))}
+				d={linePath(s.points.map(at))}
 				fill="none"
 				stroke="currentColor"
 				aria-hidden="true"
@@ -49,12 +57,12 @@
 			/>
 			{#each s.points as p, i (i)}
 				<circle
-					cx={round(ctx.xScale(p.x))}
-					cy={round(ctx.yScale(p.y))}
+					cx={round(at(p)[0])}
+					cy={round(at(p)[1])}
 					{r}
 					fill="currentColor"
 					data-point=""
-					{...ctx.point(registration.id, si, i)}
+					{...ctx.point(registration.id, si, i, p as ChartPoint)}
 				/>
 			{/each}
 		</g>

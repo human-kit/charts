@@ -20,3 +20,15 @@ export function linePath(points: ReadonlyArray<readonly [number, number]>): stri
 	}
 	return d;
 }
+
+/**
+ * The `d` attribute of a filled area between two lines with the same x positions: along `top`,
+ * back along `bottom`, and closed.
+ */
+export function areaPath(
+	top: ReadonlyArray<readonly [number, number]>,
+	bottom: ReadonlyArray<readonly [number, number]>
+): string {
+	if (!top.length) return '';
+	return `${linePath(top)}L${linePath([...bottom].reverse()).slice(1)}Z`;
+}

@@ -3,13 +3,21 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import { move } from '../internal/navigation.js';
 	import { isFocusVisible, onModalityChange } from '../internal/modality.js';
-	import { nice, scaleLinear } from '../scales/linear.js';
-	import type { ChartRootProps } from '../types.js';
+	import { read } from '../internal/channel.js';
+	import { dev } from '../internal/environment.js';
+	import { isValue } from '../internal/series.js';
+	import { scaleLinear } from '../scales/linear.js';
+	import type { Scale } from '../scales/types.js';
+	import type { ChartRootProps, ScaleOptions, ValueFormat } from '../types.js';
 	import {
 		setChartContext,
 		type ChartContext,
+		type ChartEntry,
+		type ChartMargin,
+		type ChartMark,
 		type ChartPoint,
-		type ChartSeries
+		type ChartTick,
+		type ChartValue
 	} from './context.js';
 
 	const generatedId = $props.id();
@@ -27,9 +35,11 @@
 		margin: marginProp,
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- bindable: the parent reads it.
 		focused = $bindable(null),
+		selected = $bindable(null),
 		onSelect,
 		locale,
-		formatOptions,
+		xFormat,
+		yFormat,
 		'aria-label': ariaLabel,
 		'aria-labelledby': ariaLabelledBy,
 		'aria-describedby': ariaDescribedBy,
@@ -37,7 +47,6 @@
 		class: className = '',
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- bindable: the parent reads it.
 		element = $bindable<HTMLElement | null>(null),
-
 		context = $bindable(),
 		...restProps
 	}: ChartRootProps<T> = $props();
@@ -48,18 +57,32 @@
 	const DEFAULT_WIDTH = 640;
 	let measuredWidth = $state(0);
 	const width = $derived(widthProp ?? (measuredWidth || DEFAULT_WIDTH));
-	const margin = $derived({ top: 8, right: 8, bottom: 8, left: 8, ...marginProp });
+
+	// The space that each axis needs for its labels. The largest need of a side is its margin.
+	const SIDES = ['top', 'right', 'bottom', 'left'] as const;
+	const MIN_MARGIN = 8;
+	const reserved = new SvelteMap<string, Partial<ChartMargin>>();
+	let reserveCount = 0;
+	const margin = $derived.by(() => {
+		const out: ChartMargin = { top: 0, right: 0, bottom: 0, left: 0 };
+		for (const side of SIDES) {
+			let size = MIN_MARGIN;
+			for (const needs of reserved.values()) size = Math.max(size, Math.ceil(needs[side] ?? 0));
+			out[side] = marginProp?.[side] ?? size;
+		}
+		return out;
+	});
 
 	// The marks, in mount order. The order of the marks is the order of the series for the keyboard.
-	const marks = new SvelteMap<string, () => ChartSeries[]>();
+	const marks = new SvelteMap<string, ChartMark>();
 	let markCount = 0;
 
-	type Entry = { mark: string; series: number; points: ChartPoint[] };
 	const entries = $derived.by(() => {
-		const out: Entry[] = [];
-		for (const [mark, read] of marks) {
-			read().forEach((s, index) => {
-				if (s.points.length) out.push({ mark, series: index, points: s.points });
+		const out: ChartEntry[] = [];
+		for (const [mark, m] of marks) {
+			const horizontal = m.horizontal?.() ?? false;
+			m.read().forEach((s, index) => {
+				if (s.points.length) out.push({ mark, series: index, points: s.points, horizontal });
 			});
 		}
 		return out;
@@ -81,30 +104,162 @@
 		return map;
 	});
 
-	function extent(values: number[]): [number, number] {
-		return values.length ? [Math.min(...values), Math.max(...values)] : [0, 1];
+	// The values of the domains. On a server, a `$derived` keeps the value of its first read, and
+	// the parts read it in markup order. Thus the values of the root come from its own props, which
+	// are complete before the first part starts. Only a mark with data or channels of its own, or a
+	// stack, adds values through its registration.
+	const rootValues = $derived.by(() => {
+		const xs: ChartValue[] = [];
+		const ys: ChartValue[] = [];
+		if (x && y) {
+			data.forEach((row, index) => {
+				const xv = read(x, row, index);
+				const yv = read(y, row, index);
+				if (!isValue(xv) || !isValue(yv)) return;
+				xs.push(xv);
+				ys.push(yv);
+			});
+		}
+		return { xs, ys };
+	});
+	const extents = $derived([...marks.values()].flatMap((m) => (m.extent ? [m.extent()] : [])));
+	const rawX = $derived([...rootValues.xs, ...extents.flatMap((e) => e.x ?? [])]);
+	const rawY = $derived([...rootValues.ys, ...extents.flatMap((e) => e.y ?? [])]);
+
+	/** The categories of a channel, in the order of their first appearance, with their indexes. */
+	function categoriesOf(values: ChartValue[]) {
+		const names = [...new Set(values.filter((v): v is string => typeof v === 'string'))];
+		return { names, index: new Map(names.map((name, i) => [name, i])) };
+	}
+	const xCategories = $derived(categoriesOf(rawX));
+	const yCategories = $derived(categoriesOf(rawY));
+
+	/** A value as a number: a date is its time, and a category is its index. */
+	function toNumber(value: ChartValue, categories: { index: Map<string, number> }) {
+		return typeof value === 'string' ? (categories.index.get(value) ?? NaN) : +value;
+	}
+	const toX = (value: ChartValue) => toNumber(value, xCategories);
+	const toY = (value: ChartValue) => toNumber(value, yCategories);
+	const xValues = $derived(rawX.map(toX));
+	const yValues = $derived(rawY.map(toY));
+
+	/** About one tick for each 80 pixels of a horizontal axis, and each 40 of a vertical one. */
+	function tickCount(range: readonly [number, number], spacing: number) {
+		return Math.max(2, Math.round(Math.abs(range[1] - range[0]) / spacing));
 	}
 
-	const xDomain = $derived.by(() => {
-		const domain =
-			xScaleOptions?.domain ?? extent(entries.flatMap((e) => e.points.map((p) => p.x)));
-		return xScaleOptions?.nice ? nice(domain) : domain;
-	});
-	const yDomain = $derived.by(() => {
-		const domain =
-			yScaleOptions?.domain ?? extent(entries.flatMap((e) => e.points.map((p) => p.y)));
-		return (yScaleOptions?.nice ?? true) ? nice(domain) : domain;
-	});
-	const xScale = $derived(scaleLinear(xDomain, [margin.left, width - margin.right]));
-	const yScale = $derived(scaleLinear(yDomain, [height - margin.bottom, margin.top]));
+	function makeScale(
+		options: ScaleOptions | undefined,
+		values: number[],
+		range: [number, number],
+		count: number,
+		categories: readonly string[],
+		defaults: { nice: boolean; zero: boolean }
+	): Scale {
+		const type = options?.type ?? scaleLinear;
+		const given = options?.domain;
+		let domain: [number, number] = given
+			? [+given[0], +given[1]]
+			: values.length
+				? [Math.min(...values), Math.max(...values)]
+				: [0, 1];
+		if (!given && (options?.zero ?? defaults.zero)) {
+			domain = [Math.min(domain[0], 0), Math.max(domain[1], 0)];
+		}
+		const settings = { categories, padding: options?.padding };
+		const scale = type(domain, range, settings);
+		return (options?.nice ?? defaults.nice) ? type(scale.nice(count), range, settings) : scale;
+	}
 
-	const numberFormat = $derived(new Intl.NumberFormat(locale, formatOptions));
+	// Categories on one axis make a bar chart likely, thus the other axis starts at zero. A vertical
+	// axis of categories goes from the top down, in the order of reading.
+	const yCategorical = $derived(yCategories.names.length > 0);
+	const xRange = $derived<[number, number]>([margin.left, width - margin.right]);
+	const yRange = $derived<[number, number]>(
+		yCategorical ? [margin.top, height - margin.bottom] : [height - margin.bottom, margin.top]
+	);
+	const xCount = $derived(tickCount(xRange, 80));
+	const yCount = $derived(tickCount(yRange, 40));
+	const xScale = $derived(
+		makeScale(xScaleOptions, xValues, xRange, xCount, xCategories.names, {
+			nice: yCategorical,
+			zero: yCategorical
+		})
+	);
+	const yScale = $derived(
+		makeScale(yScaleOptions, yValues, yRange, yCount, yCategories.names, {
+			nice: !yCategorical,
+			zero: !yCategorical
+		})
+	);
 
-	/** The accessible name of a point: the x value, the series and the y value. */
-	function pointLabel(point: ChartPoint) {
-		const parts = [numberFormat.format(point.x)];
+	$effect(() => {
+		if (!dev) return;
+		for (const [axis, raw, scale] of [
+			['x', rawX[0], xScale],
+			['y', rawY[0], yScale]
+		] as const) {
+			if (raw instanceof Date && scale.kind !== 'time') {
+				console.warn(
+					`Chart.Root: the ${axis} values are dates, but the ${axis} scale is not a time scale. Import \`scaleTime\` from "@human-kit/charts/scales/time" and give \`${axis}Scale={{ type: scaleTime }}\`.`
+				);
+			}
+			if (typeof raw === 'string' && scale.kind !== 'band') {
+				console.warn(
+					`Chart.Root: the ${axis} values are categories, but the ${axis} scale is not a band scale. Import \`scaleBand\` from "@human-kit/charts/scales/band" and give \`${axis}Scale={{ type: scaleBand }}\`.`
+				);
+			}
+		}
+	});
+
+	function valueFormatter(
+		scale: Scale,
+		values: number[],
+		categories: readonly string[],
+		format: ValueFormat | undefined
+	) {
+		if (typeof format === 'function') {
+			return (value: number) =>
+				format(
+					scale.kind === 'time'
+						? new Date(value)
+						: scale.kind === 'band'
+							? categories[value]
+							: value
+				);
+		}
+		return scale.valueFormat(values, locale, format);
+	}
+
+	const xValueFormat = $derived(valueFormatter(xScale, xValues, xCategories.names, xFormat));
+	const yValueFormat = $derived(valueFormatter(yScale, yValues, yCategories.names, yFormat));
+
+	function makeTicks(
+		scale: Scale,
+		count: number,
+		format: ValueFormat | undefined,
+		full: (value: number) => string
+	): ChartTick[] {
+		// A format from the consumer is also the format of the ticks.
+		const label = format ? full : scale.tickFormat(count, locale);
+		return scale
+			.ticks(count)
+			.map((value) => ({ value, position: scale(value), label: label(value) }));
+	}
+
+	const xTicks = $derived(makeTicks(xScale, xCount, xFormat, xValueFormat));
+	const yTicks = $derived(makeTicks(yScale, yCount, yFormat, yValueFormat));
+
+	/**
+	 * The accessible name of a point: the category or the x value first, then the series and the
+	 * value.
+	 */
+	function pointLabel(point: ChartPoint, horizontal: boolean) {
+		const xText = xValueFormat(toX(point.x));
+		const yText = yValueFormat(toY(point.y));
+		const parts = horizontal ? [yText] : [xText];
 		if (point.series) parts.push(point.series);
-		parts.push(numberFormat.format(point.y));
+		parts.push(horizontal ? xText : yText);
 		return parts.join(', ');
 	}
 
@@ -117,10 +272,25 @@
 	});
 	let focusedId: string | null = $state(null);
 	let focusVisible = $state(false);
+	let plotElement: SVGSVGElement | null = $state(null);
+
+	function locate(id: string | null) {
+		const position = id ? positions.get(id) : undefined;
+		return position ? { entry: entries[position.series], index: position.index } : null;
+	}
 
 	function pointAt(id: string | null): ChartPoint | null {
-		const position = id ? positions.get(id) : undefined;
-		return position ? entries[position.series].points[position.index] : null;
+		const found = locate(id);
+		return found ? found.entry.points[found.index] : null;
+	}
+
+	/**
+	 * Whether the point is the selected point: the same row index and series. The test does not use
+	 * the identity of the row, because a parent that holds `selected` in a `$state` gets a proxy of
+	 * it, and a proxy is not equal to its row.
+	 */
+	function isSelected(point: ChartPoint) {
+		return !!selected && selected.index === point.index && selected.series === point.series;
 	}
 
 	function targetId(event: Event) {
@@ -128,9 +298,12 @@
 		return id && positions.has(id) ? id : null;
 	}
 
+	/** Selects the point, or clears the selection when the point is already selected. */
 	function select(id: string) {
-		const point = pointAt(id);
-		if (point) onSelect?.(point as ChartPoint<T>);
+		const point = pointAt(id) as ChartPoint<T> | null;
+		if (!point) return;
+		selected = isSelected(point) ? null : point;
+		onSelect?.(point);
 	}
 
 	$effect(() => {
@@ -141,6 +314,14 @@
 		});
 	});
 
+	// On a mark with its categories on the y axis, the vertical arrows move in the series.
+	const TURN: Record<string, string> = {
+		ArrowDown: 'ArrowRight',
+		ArrowUp: 'ArrowLeft',
+		ArrowRight: 'ArrowDown',
+		ArrowLeft: 'ArrowUp'
+	};
+
 	const plotHandlers: ChartContext['plotHandlers'] = {
 		onkeydown(event) {
 			const id = targetId(event);
@@ -150,10 +331,12 @@
 				select(id);
 				return;
 			}
+			const position = positions.get(id)!;
+			const horizontal = entries[position.series].horizontal;
 			const next = move(
-				entries.map((e) => e.points.map((p) => p.x)),
-				positions.get(id)!,
-				event.key
+				entries.map((e) => e.points.map((p) => (e.horizontal ? toY(p.y) : toX(p.x)))),
+				position,
+				horizontal ? (TURN[event.key] ?? event.key) : event.key
 			);
 			if (!next) return;
 			event.preventDefault();
@@ -220,27 +403,73 @@
 		get yScale() {
 			return yScale;
 		},
+		get xTicks() {
+			return xTicks;
+		},
+		get yTicks() {
+			return yTicks;
+		},
+		reserve(needs) {
+			const id = `a${reserveCount++}`;
+			reserved.set(id, needs);
+			return {
+				update(next) {
+					const last = reserved.get(id);
+					// A change below one pixel does not count: it stops a loop of measures.
+					const same =
+						last && SIDES.every((side) => Math.abs((last[side] ?? 0) - (next[side] ?? 0)) < 1);
+					if (!same) reserved.set(id, next);
+				},
+				unregister: () => reserved.delete(id)
+			};
+		},
 		get titleId() {
 			return titleId;
 		},
 		set titleId(value) {
 			titleId = value;
 		},
-		register(read) {
+		toX,
+		toY,
+		register(mark) {
 			const id = `m${markCount++}`;
-			marks.set(id, read);
+			marks.set(id, mark);
 			return { id, unregister: () => marks.delete(id) };
 		},
-		point(mark, s, index) {
+		get marks() {
+			return [...marks.values()];
+		},
+		get entries() {
+			return entries;
+		},
+		pointId,
+		pointAt,
+		locate,
+		anchor: (mark, s, index) => marks.get(mark)?.anchor(s, index) ?? null,
+		formatX: (value) => xValueFormat(value),
+		formatY: (value) => yValueFormat(value),
+		get focus() {
+			return { id: focusedId, visible: focusVisible };
+		},
+		isSelected,
+		get plotElement() {
+			return plotElement;
+		},
+		set plotElement(value) {
+			plotElement = value;
+		},
+		point(mark, s, index, point) {
 			const id = pointId(mark, s, index);
-			const point = pointAt(id);
+			const current = isSelected(point) ? 'true' : undefined;
 			return {
 				id,
 				role: 'img',
 				tabindex: id === tabStopId ? 0 : -1,
-				'aria-label': point ? pointLabel(point) : '',
+				'aria-label': pointLabel(point, marks.get(mark)?.horizontal?.() ?? false),
+				'aria-current': current,
 				'data-focused': id === focusedId ? 'true' : undefined,
-				'data-focus-visible': id === focusedId && focusVisible ? 'true' : undefined
+				'data-focus-visible': id === focusedId && focusVisible ? 'true' : undefined,
+				'data-selected': current
 			};
 		},
 		get labels() {
@@ -265,6 +494,7 @@
 	id="chart-{instanceId}"
 	class={className}
 	data-chart=""
+	style:position="relative"
 	data-focus-within={focusedId ? 'true' : undefined}
 	data-focus-visible={focusVisible ? 'true' : undefined}
 	{...restProps}

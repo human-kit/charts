@@ -1,15 +1,28 @@
 <script lang="ts">
 	import { Chart, type ChartPoint } from '$lib/index.js';
+	import { scaleTime } from '$lib/scales/time.js';
+	import { scaleBand } from '$lib/scales/band.js';
 
-	type Row = { year: number; region: string; revenue: number };
+	type Row = { year: Date; region: string; revenue: number };
 	const regions = ['North', 'South', 'East'];
 	const data: Row[] = regions.flatMap((region, r) =>
 		Array.from({ length: 12 }, (_, i) => ({
-			year: 2014 + i,
+			year: new Date(2014 + i, 0, 1),
 			region,
 			revenue: Math.round(40 + r * 15 + i * (3 + r) + Math.sin(i + r) * 8)
 		}))
 	);
+
+	type Sale = { quarter: string; region: string; sales: number };
+	const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+	const sales: Sale[] = regions.flatMap((region, r) =>
+		quarters.map((quarter, q) => ({
+			quarter,
+			region,
+			sales: 20 + r * 8 + q * 6 - (q === 2 ? 15 : 0)
+		}))
+	);
+	let layout: 'grouped' | 'stacked' = $state('grouped');
 
 	let focused: ChartPoint<Row> | null = $state(null);
 	let selected: ChartPoint<Row> | null = $state(null);
@@ -24,6 +37,8 @@
 		x="year"
 		y="revenue"
 		series="region"
+		xScale={{ type: scaleTime }}
+		yFormat={{ style: 'currency', currency: 'USD', maximumFractionDigits: 0 }}
 		height={320}
 		bind:focused
 		onSelect={(point) => (selected = point)}
@@ -31,12 +46,50 @@
 	>
 		<Chart.Title>Revenue per region, 2014 to 2025</Chart.Title>
 		<Chart.Plot>
+			<Chart.Grid axis="y" class="grid" />
+			<Chart.Axis position="bottom" />
+			<Chart.Axis position="left" label="Revenue (USD)" />
 			<Chart.Line />
 		</Chart.Plot>
+		<Chart.Legend class="legend" />
+		<Chart.Tooltip class="tooltip" />
+		<Chart.DataTable />
 	</Chart.Root>
 
-	<p>Focused: {focused ? `${focused.datum.region} ${focused.datum.year}` : 'none'}</p>
-	<p>Selected: {selected ? `${selected.datum.region} ${selected.datum.year}` : 'none'}</p>
+	<p>Focused: {focused ? `${focused.datum.region} ${focused.datum.year.getFullYear()}` : 'none'}</p>
+	<p>
+		Selected: {selected ? `${selected.datum.region} ${selected.datum.year.getFullYear()}` : 'none'}
+	</p>
+
+	<h2>Bars</h2>
+	<label>
+		<input
+			type="checkbox"
+			checked={layout === 'stacked'}
+			onchange={(event) => (layout = event.currentTarget.checked ? 'stacked' : 'grouped')}
+		/>
+		Stacked
+	</label>
+	<Chart.Root
+		data={sales}
+		x="quarter"
+		y="sales"
+		series="region"
+		xScale={{ type: scaleBand }}
+		height={280}
+		class="chart"
+	>
+		<Chart.Title>Sales per quarter and region</Chart.Title>
+		<Chart.Plot>
+			<Chart.Grid axis="y" class="grid" />
+			<Chart.Axis position="bottom" />
+			<Chart.Axis position="left" label="Sales (units)" />
+			<Chart.Bar {layout} />
+		</Chart.Plot>
+		<Chart.Legend class="legend" />
+		<Chart.Tooltip class="tooltip" />
+		<Chart.DataTable visibility="visible" class="table" />
+	</Chart.Root>
 </main>
 
 <style>
@@ -48,14 +101,18 @@
 	}
 	:global(.chart) {
 		margin: 0;
+		font-size: 12px;
 	}
-	:global(.chart [data-series='North']) {
+	:global(.chart .grid) {
+		color: #e5e7eb;
+	}
+	:global(.chart svg [data-series='North']) {
 		color: #2563eb;
 	}
-	:global(.chart [data-series='South']) {
+	:global(.chart svg [data-series='South']) {
 		color: #d97706;
 	}
-	:global(.chart [data-series='East']) {
+	:global(.chart svg [data-series='East']) {
 		color: #059669;
 	}
 	:global(.chart [data-line]) {
@@ -67,8 +124,50 @@
 	:global(.chart [data-point][data-focused]) {
 		r: 6;
 	}
+	:global(.chart [data-bar][data-focused]) {
+		opacity: 0.8;
+	}
 	:global(.chart [data-point][data-focus-visible]) {
 		stroke: CanvasText;
 		stroke-width: 2;
+	}
+	:global(.legend) {
+		display: flex;
+		gap: 1rem;
+		margin: 0.5rem 0 0;
+		padding: 0;
+		list-style: none;
+	}
+	:global(.legend [data-swatch]) {
+		display: inline-block;
+		width: 0.75rem;
+		height: 0.75rem;
+		border-radius: 2px;
+		background: currentColor;
+	}
+	:global(.legend [data-series='North']) {
+		color: #2563eb;
+	}
+	:global(.legend [data-series='South']) {
+		color: #d97706;
+	}
+	:global(.legend [data-series='East']) {
+		color: #059669;
+	}
+	:global(.tooltip) {
+		padding: 0.25rem 0.5rem;
+		border-radius: 4px;
+		background: #111827;
+		color: white;
+		white-space: nowrap;
+	}
+	:global(.table) {
+		margin-top: 1rem;
+		border-collapse: collapse;
+	}
+	:global(.table th),
+	:global(.table td) {
+		padding: 0.125rem 0.5rem;
+		text-align: right;
 	}
 </style>
