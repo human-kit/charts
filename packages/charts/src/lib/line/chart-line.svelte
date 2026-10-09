@@ -43,15 +43,19 @@
 
 	// A mark with data or channels of its own adds its values to the domains.
 	const own = untrack(() => data !== undefined || x !== undefined || y !== undefined);
-	const registration = ctx.register(
-		() => groups as ChartSeries[],
-		own
+	const registration = ctx.register({
+		read: () => groups as ChartSeries[],
+		extent: own
 			? () => ({
 					x: groups.flatMap((s) => s.points.map((p) => p.x)),
 					y: groups.flatMap((s) => s.points.map((p) => p.y))
 				})
-			: undefined
-	);
+			: undefined,
+		anchor(si, i) {
+			const p = groups[si].points[i];
+			return [ctx.xScale(ctx.toX(p.x)), ctx.yScale(p.y)];
+		}
+	});
 	$effect(() => registration.unregister);
 </script>
 

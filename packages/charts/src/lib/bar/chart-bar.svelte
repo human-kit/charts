@@ -61,13 +61,19 @@
 
 	// The domains must include the tops of a stack, and the data of a mark with its own data.
 	const own = untrack(() => data !== undefined || x !== undefined || y !== undefined);
-	const registration = ctx.register(
-		() => groups as ChartSeries[],
-		() => ({
+	const registration = ctx.register({
+		read: () => groups as ChartSeries[],
+		extent: () => ({
 			x: own ? groups.flatMap((s) => s.points.map((p) => p.x)) : undefined,
 			y: layout === 'stacked' || own ? spans.flat(2) : undefined
-		})
-	);
+		}),
+		// The tooltip points at the middle of the end of the bar.
+		anchor(si, i) {
+			const box = rect(si, i, groups[si].points[i] as ChartPoint);
+			const top = groups[si].points[i].y >= 0;
+			return [box.x + box.width / 2, top ? box.y : box.y + box.height];
+		}
+	});
 	$effect(() => registration.unregister);
 
 	$effect(() => {

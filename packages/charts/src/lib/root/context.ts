@@ -22,6 +22,18 @@ export type XValue = number | Date | string;
 /** The values that a mark adds to the domains of the scales. */
 export type ChartExtent = { x?: XValue[]; y?: number[] };
 
+/** The state of the tooltip. */
+export type ChartTooltipState<T = unknown> = {
+	point: ChartPoint<T>;
+	/** The position of the point in the plot, in pixels. */
+	x: number;
+	y: number;
+	/** The x value as text. */
+	xText: string;
+	/** The y value as text. */
+	yText: string;
+};
+
 /** The points of one series of a mark. */
 export type ChartSeries<T = unknown> = {
 	name: string;
@@ -81,15 +93,36 @@ export type ChartContext = {
 	titleId: string | null;
 	/** An x value as a number for the x scale: a date is its time, and a category is its index. */
 	toX(value: XValue): number;
-	/**
-	 * Adds a mark. `series` is read again each time the data changes. `extent` gives the values
-	 * that the domains must include in addition to the data of the root: the data of a mark with
-	 * data or channels of its own, or the tops of a stack.
-	 */
-	register(
-		series: () => ChartSeries[],
-		extent?: () => ChartExtent
-	): { id: string; unregister(): void };
+	/** Adds a mark. The root reads the functions again each time the data changes. */
+	register(mark: {
+		/** The series of the mark. */
+		read: () => ChartSeries[];
+		/**
+		 * The values that the domains must include in addition to the data of the root: the data
+		 * of a mark with data or channels of its own, or the tops of a stack.
+		 */
+		extent?: () => ChartExtent;
+		/** The position in pixels where the tooltip of a point points. */
+		anchor: (series: number, index: number) => [number, number];
+	}): { id: string; unregister(): void };
+	/** The marks, in mount order. A part reads their series, for example a legend. */
+	readonly marks: ReadonlyArray<{ read: () => ChartSeries[] }>;
+	/** The series of all of the marks with points, in the order of the keyboard. */
+	readonly entries: ReadonlyArray<{ mark: string; series: number; points: ChartPoint[] }>;
+	/** The id of the element of a point. */
+	pointId(mark: string, series: number, index: number): string;
+	/** The point with the id, or `null`. */
+	pointAt(id: string | null): ChartPoint | null;
+	/** The position in pixels where the tooltip of a point points, from its mark. */
+	anchor(mark: string, series: number, index: number): [number, number] | null;
+	/** An x value (as a number for the x scale) as text, in the format of the chart. */
+	formatX(value: number): string;
+	/** A y value as text, in the format of the chart. */
+	formatY(value: number): string;
+	/** The point that has the focus, and whether it shows the focus ring. */
+	readonly focus: { id: string | null; visible: boolean };
+	/** The SVG element of `Chart.Plot`. */
+	plotElement: SVGSVGElement | null;
 	/** The attributes of the element of a point. */
 	point(mark: string, series: number, index: number, point: ChartPoint): PointAttributes;
 	/** The accessible name and description of the chart, for the `Chart.Plot` element. */

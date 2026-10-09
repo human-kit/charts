@@ -10,6 +10,9 @@
 	}: ChartPlotProps = $props();
 
 	const ctx = useChartContext('Chart.Plot');
+	$effect(() => {
+		ctx.plotElement = element;
+	});
 </script>
 
 <!-- The handlers act on the focused point: the points are the interactive elements. -->

@@ -72,7 +72,11 @@
 	});
 
 	// The marks, in mount order. The order of the marks is the order of the series for the keyboard.
-	type Mark = { read: () => ChartSeries[]; extent?: () => ChartExtent };
+	type Mark = {
+		read: () => ChartSeries[];
+		extent?: () => ChartExtent;
+		anchor: (series: number, index: number) => [number, number];
+	};
 	const marks = new SvelteMap<string, Mark>();
 	let markCount = 0;
 
@@ -237,6 +241,7 @@
 	});
 	let focusedId: string | null = $state(null);
 	let focusVisible = $state(false);
+	let plotElement: SVGSVGElement | null = $state(null);
 
 	function pointAt(id: string | null): ChartPoint | null {
 		const position = id ? positions.get(id) : undefined;
@@ -367,10 +372,30 @@
 			titleId = value;
 		},
 		toX,
-		register(read, extent) {
+		register(mark) {
 			const id = `m${markCount++}`;
-			marks.set(id, { read, extent });
+			marks.set(id, mark);
 			return { id, unregister: () => marks.delete(id) };
+		},
+		get marks() {
+			return [...marks.values()];
+		},
+		get entries() {
+			return entries;
+		},
+		pointId,
+		pointAt,
+		anchor: (mark, s, index) => marks.get(mark)?.anchor(s, index) ?? null,
+		formatX: (value) => xValueFormat(value),
+		formatY: (value) => yValueFormat(value),
+		get focus() {
+			return { id: focusedId, visible: focusVisible };
+		},
+		get plotElement() {
+			return plotElement;
+		},
+		set plotElement(value) {
+			plotElement = value;
 		},
 		point(mark, s, index, point) {
 			const id = pointId(mark, s, index);
@@ -405,6 +430,7 @@
 	id="chart-{instanceId}"
 	class={className}
 	data-chart=""
+	style:position="relative"
 	data-focus-within={focusedId ? 'true' : undefined}
 	data-focus-visible={focusVisible ? 'true' : undefined}
 	{...restProps}

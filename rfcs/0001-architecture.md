@@ -193,11 +193,11 @@ days, hours, minutes and seconds). It makes its labels with
 | Part         | Description                                                                                                        |
 | ------------ | ------------------------------------------------------------------------------------------------------------------ |
 | `Chart.Line` | Makes one `<path>` per series, and one focus target per point.                                                     |
-| `Chart.Area` | Makes one filled `<path>` per series. `stack` puts the series one on the other.                                    |
+| `Chart.Area` | Makes one filled `<path>` per series. `stacked` puts the series one on the other. The points show only on focus.   |
 | `Chart.Bar`  | Makes one `<rect>` per row. `layout` is `grouped` or `stacked`. `orientation` is vertical or horizontal (planned). |
 
-A row without a finite value is a gap in the line. It is not a focus target,
-but the data table shows it.
+A row without a finite value is a gap in the line. It is not a focus target.
+In the data table, its cell is empty.
 
 ### Guides
 
@@ -348,16 +348,21 @@ The prototype answers the open questions before the full implementation:
 
 Steps 1 and 2 are complete (2026-10-09).
 
-- `Chart.Root`, `Chart.Title`, `Chart.Plot`, `Chart.Line`, `Chart.Bar`
-  (vertical, grouped and stacked), `Chart.Axis`, `Chart.Grid`, and the linear,
-  time and band scales are in `packages/charts`.
+- `Chart.Root`, `Chart.Title`, `Chart.Plot`, `Chart.Line`, `Chart.Area`,
+  `Chart.Bar` (vertical, grouped and stacked), `Chart.Axis`, `Chart.Grid`,
+  `Chart.Legend`, `Chart.Tooltip`, `Chart.DataTable`, and the linear, time and
+  band scales are in `packages/charts`.
+- Each part holds its own logic. The legend, the tooltip and the data table
+  read the marks through the context, thus a chart without them does not
+  include their code.
 - Sizes from `pnpm size`, gzip, without the Svelte runtime:
 
-  | Chart                                       | Size    |
-  | ------------------------------------------- | ------- |
-  | A line with the keyboard operation          | 4.66 kB |
-  | A line on a time scale, two axes and a grid | 6.76 kB |
-  | Stacked bars on a band scale, axes and grid | 6.19 kB |
+  | Chart                                                     | Size    |
+  | --------------------------------------------------------- | ------- |
+  | A line with the keyboard operation                        | 4.81 kB |
+  | A line on a time scale, two axes and a grid               | 6.92 kB |
+  | Stacked bars on a band scale, axes and grid               | 6.37 kB |
+  | Stacked areas, axes, grid, legend, tooltip and data table | 9.25 kB |
 
   The support for categories in the root adds about 0.2 kB to each chart.
 
@@ -370,6 +375,9 @@ Steps 1 and 2 are complete (2026-10-09).
      changes from one x value to the next. See open question 3.
   3. On a server, a `$derived` value does not change after its first read. See
      "Size and rendering on a server".
+  4. A key press before the hydration does nothing: the point has the focus,
+     but no handler is on it yet. The page must not hold a server markup for
+     a long time before the hydration.
 
 ## Open questions
 

@@ -1,7 +1,14 @@
 import type { Snippet } from 'svelte';
 import type { HTMLAttributes, SVGAttributes } from 'svelte/elements';
 import type { Channel } from './internal/channel.js';
-import type { ChartContext, ChartMargin, ChartPoint, ChartTick, XValue } from './root/context.js';
+import type {
+	ChartContext,
+	ChartMargin,
+	ChartPoint,
+	ChartTick,
+	ChartTooltipState,
+	XValue
+} from './root/context.js';
 import type { FormatOptions, Scale, ScaleType } from './scales/types.js';
 
 export type {
@@ -13,6 +20,7 @@ export type {
 	FormatOptions,
 	Scale,
 	ScaleType,
+	ChartTooltipState,
 	XValue
 };
 
@@ -155,4 +163,49 @@ export type ChartBarProps<T> = Omit<ChartLineProps<T>, 'r'> & {
 	layout?: 'grouped' | 'stacked';
 	/** The space between the bars of a group, as a fraction of a bar. The default is 0.1. */
 	groupPadding?: number;
+};
+
+export type ChartAreaProps<T> = Omit<ChartLineProps<T>, 'r'> & {
+	/** Puts the series one on the other. The default is `false`: each area starts at zero. */
+	stacked?: boolean;
+	/** The radius of the point of each row, in pixels. The default is 0: the points are hidden. */
+	r?: number;
+	/** The radius of the point that has the focus, in pixels. The default is 4. */
+	focusRadius?: number;
+};
+
+export type ChartLegendProps = Omit<HTMLAttributes<HTMLUListElement>, 'class' | 'children'> & {
+	/**
+	 * The content of an item. It receives the name and the index of the series. Without it, an
+	 * item shows an empty `data-swatch` element and the name.
+	 */
+	children?: Snippet<[{ name: string; index: number }]>;
+	/** The CSS class names of the list. */
+	class?: string;
+};
+
+export type ChartDataTableProps = Omit<HTMLAttributes<HTMLTableElement>, 'class' | 'children'> & {
+	/**
+	 * `visible` shows the table. `screen-reader` keeps it only in the accessibility tree. The
+	 * default is `screen-reader`.
+	 */
+	visibility?: 'visible' | 'screen-reader';
+	/** The caption of the table. Without it, the `Chart.Title` names the table. */
+	caption?: string;
+	/** The header of the column of the x values. The default is the name of the x field. */
+	xHeader?: string;
+	/** The CSS class names of the table. */
+	class?: string;
+};
+
+export type ChartTooltipProps = Omit<HTMLAttributes<HTMLDivElement>, 'class' | 'children'> & {
+	/**
+	 * The content. It receives the point, and the x and y values as text. Without it, the tooltip
+	 * shows the x value, the series and the y value.
+	 */
+	children?: Snippet<[ChartTooltipState]>;
+	/** The distance between the point and the tooltip, in pixels. The default is 8. */
+	offset?: number;
+	/** The CSS class names of the tooltip. */
+	class?: string;
 };
