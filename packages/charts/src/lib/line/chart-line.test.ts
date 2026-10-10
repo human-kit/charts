@@ -18,7 +18,7 @@ describe('Chart.Line', () => {
 		const plot = document.querySelector('[data-testid="plot"]')!;
 		const title = document.querySelector('figcaption')!;
 
-		expect(plot.getAttribute('role')).toBe('group');
+		expect(plot.getAttribute('role')).toBe('application');
 		expect(plot.getAttribute('aria-roledescription')).toBe('chart');
 		expect(plot.getAttribute('aria-labelledby')).toBe(title.id);
 		expect(points().map((p) => p.getAttribute('aria-label'))).toEqual([

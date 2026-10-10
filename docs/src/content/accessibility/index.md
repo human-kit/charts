@@ -18,10 +18,20 @@ Accessibility is the primary requirement of this library. A keyboard user and a 
 ## Structure
 
 - `Chart.Root` makes a `<figure>`. `Chart.Title`, when it is present, is the `<figcaption>`.
-- The `<svg>` of `Chart.Plot` has `role="group"`, `aria-roledescription="chart"` and the accessible name of the chart.
+- The `<svg>` of `Chart.Plot` has `role="application"`, `aria-roledescription="chart"` and the accessible name of the chart.
 - Each series is a group with the name of the series.
 - Each point has `role="img"` and an accessible name with all of its values.
 - The paths, the axes, the grid lines and the legend have `aria-hidden="true"`. The names of the points and the data table give the same information.
+
+## Screen readers
+
+A screen reader in browse mode keeps the arrow keys for its own reading. The `application` role tells it to go into focus mode when a point gets the focus. Then the arrow keys come to the chart, and the screen reader reads each point that gets the focus.
+
+With NVDA and Chrome, `Tab` reads "Downloads per year, in thousands, chart, Core, grouping, 2018, Core, 40, graphic". `ArrowRight` then reads "2019, Core, 46", and `ArrowDown` reads "Icons, grouping, 2019, Icons, 27".
+
+The title, the legend and the data table are out of the plot, thus they stay in browse mode. Use the data table to read the values cell by cell.
+
+The test used NVDA. JAWS and VoiceOver are not tested yet.
 
 ## Keyboard
 
