@@ -1,0 +1,103 @@
+name: Release
+#
+# Two paths, decided by whether there are unreleased changesets:
+#
+#   changesets pending → version, and push the result to `changeset-release/main`
+#                        for review. Merging that branch is what releases.
+#   none pending       → publish to npm, push the tags and create the GitHub Releases.
+#
+# OFF for now: the only trigger is a manual run, and the repo has no NPM_TOKEN
+# secret yet, so the publish step cannot run. To turn releases on, add the secret
+# and the `push: branches: [main]` trigger below.
+#
+# The job pushes the release branch and links the pull request instead of opening
+# it: opening one needs the "Allow GitHub Actions to create and approve pull
+# requests" switch, which also lets a workflow approve its own pull request.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # `changeset version` reads the tags to know what is already released.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Version
+        id: version
+        env:
+          # The changelog generator calls the GitHub API for the PR and the author
+          # of each changeset, and it aborts without a token.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pnpm exec changeset version
+
+          if git diff --quiet; then
+            echo "versioned=false" >> "$GITHUB_OUTPUT"
+            echo "No unreleased changesets: nothing to version."
+            exit 0
+          fi
+
+          echo "versioned=true" >> "$GITHUB_OUTPUT"
+          git add -A
+          git commit -m "chore: version packages"
+          git push --force origin HEAD:changeset-release/main
+
+          VERSION=$(node -p "require('./packages/charts/package.json').version")
+          {
+            echo "### Release ready: \`$VERSION\`"
+            echo
+            echo "[Open the release pull request](${{ github.server_url }}/${{ github.repository }}/compare/main...changeset-release/main?expand=1)"
+            echo
+            echo "Merging it, and running this workflow again, publishes to npm."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # `changeset publish` reads its credentials from an `.npmrc`. Nothing else
+      # writes one, and without it npm answers a refused publish with `E404`.
+      # It goes to $HOME so that no later step can commit it.
+      - name: Authenticate with npm
+        if: steps.version.outputs.versioned == 'false'
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$HOME/.npmrc"
+
+      # `changeset publish` skips the versions that are already on npm, thus a
+      # second run does nothing.
+      - name: Publish
+        if: steps.version.outputs.versioned == 'false'
+        run: pnpm run release
+
+      - name: Push tags
+        if: steps.version.outputs.versioned == 'false'
+        run: git push origin --tags
+
+      - name: Create GitHub releases
+        if: steps.version.outputs.versioned == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/gh-releases.mjs

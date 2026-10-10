@@ -100,3 +100,27 @@ jobs:
             node scripts/size.mjs
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  changeset-check:
+    name: Changeset Check
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check for a changeset
+        run: |
+          # A PR that does not change the source of the library needs no changeset.
+          CHANGED=$(git diff --name-only origin/main...HEAD -- 'packages/charts/src/lib/**' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "No change to the library source: no changeset is necessary."
+            exit 0
+          fi
+          ADDED=$(git diff --name-only --diff-filter=A origin/main...HEAD -- '.changeset/*.md' || true)
+          if [ -z "$ADDED" ]; then
+            echo "::error::This PR changes the library source but adds no changeset. Run 'pnpm changeset'."
+            exit 1
+          fi
+          echo "Changeset found:"
+          echo "$ADDED"

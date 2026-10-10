@@ -4,9 +4,33 @@
 	"description": "Accessible, headless chart components for Svelte 5.",
 	"license": "MIT",
 	"author": "Agustin Delgado <agustindariodelgado@gmail.com>",
+	"homepage": "https://charts.human-kit.com",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/human-kit/charts.git",
+		"directory": "packages/charts"
+	},
+	"bugs": {
+		"url": "https://github.com/human-kit/charts/issues"
+	},
+	"keywords": [
+		"svelte",
+		"svelte5",
+		"charts",
+		"chart",
+		"data-visualization",
+		"accessible",
+		"a11y",
+		"headless",
+		"svg",
+		"human-kit"
+	],
 	"type": "module",
 	"engines": {
 		"node": ">=20"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"sideEffects": false,
 	"svelte": "./dist/index.js",
