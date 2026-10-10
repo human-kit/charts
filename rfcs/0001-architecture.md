@@ -343,6 +343,11 @@ category.
 - The root makes the SVG on the server with the `width` prop, or with a default
   width of 640 pixels. After the mount, it measures the container with a
   `ResizeObserver`.
+- Without the `width` prop, the SVG has `width="100%"` until the first
+  measure. The `viewBox` keeps the default width, thus the browser scales the
+  chart to its container. On a narrow screen, the chart does not make the page
+  wider before the hydration. After the measure, the width is in pixels and
+  the chart draws again at the real size.
 - Each axis measures its labels after the mount, and asks the root for the
   space. The margin of a side is the largest space that an axis asks for. A
   change below one pixel does not count, thus the measures stop.
@@ -452,8 +457,12 @@ Steps 1 and 2 are complete (2026-10-09).
    from a series in one mark to the series with the same name in the next mark.
 4. **The keyboard model for a bar chart** with many series: the prototype must
    confirm that the up and down arrows are clear to the user.
-5. **The default width on the server**, and how the chart shows the change
-   after the first measure.
+5. **The default width on the server.** Decided: 640 pixels in the `viewBox`,
+   and `width="100%"` on the SVG until the first measure. A fixed width of 640
+   pixels made a page wider than a phone screen until the hydration. The
+   height does not change, thus the page does not move when the chart gets its
+   real width. The chart does not animate the change: there is no animation in
+   version 1.
 6. **The name of a value.** Decided: the name does not include the field.
    A point is "2015, South, 66". A field name is a name in the code, for
    example `revenue_usd`, and not a text for a user. When two marks show two

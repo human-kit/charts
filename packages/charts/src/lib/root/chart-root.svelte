@@ -57,6 +57,7 @@
 	const DEFAULT_WIDTH = 640;
 	let measuredWidth = $state(0);
 	const width = $derived(widthProp ?? (measuredWidth || DEFAULT_WIDTH));
+	const fluid = $derived(widthProp === undefined && !measuredWidth);
 
 	// The space that each axis needs for its labels. The largest need of a side is its margin.
 	const SIDES = ['top', 'right', 'bottom', 'left'] as const;
@@ -420,6 +421,9 @@
 		},
 		get width() {
 			return width;
+		},
+		get fluid() {
+			return fluid;
 		},
 		get height() {
 			return height;
