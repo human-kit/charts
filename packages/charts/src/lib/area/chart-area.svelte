@@ -17,6 +17,7 @@
 		x,
 		y,
 		series,
+		name,
 		stacked = false,
 		r = 0,
 		focusRadius = 4,
@@ -30,7 +31,8 @@
 			(data ?? ctx.data) as readonly T[],
 			(x ?? ctx.x) as Channel<T, ChartValue> | undefined,
 			(y ?? ctx.y) as Channel<T, ChartValue> | undefined,
-			(series ?? ctx.series) as Channel<T, string> | undefined
+			(series ?? ctx.series) as Channel<T, string> | undefined,
+			name
 		)
 	);
 

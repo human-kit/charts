@@ -55,11 +55,15 @@ Only a mark with its own `data` can have its own `x`, `y` and `series`. The type
 ```svelte
 <Chart.Root data={sales} x="month" y="revenue">
 	<Chart.Plot>
-		<Chart.Line />
-		<Chart.Line data={sales} y="cost" />
+		<Chart.Line name="Revenue" />
+		<Chart.Line data={sales} y="cost" name="Cost" />
 	</Chart.Plot>
 </Chart.Root>
 ```
+
+## The name of a mark
+
+A mark without a series channel shows one series without a name. Give it a name with `name`. The legend, the names of the points and the data table show it. Give each mark a `name` when two marks show two fields. Without the names, the points of the two lines have the same type of name, and the data table shows only the first line.
 
 ## Keyboard
 

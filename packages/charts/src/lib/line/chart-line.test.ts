@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import { userEvent } from 'vitest/browser';
 import LineTest from './line-test.svelte';
+import NamedTest from './named-test.svelte';
 
 function points() {
 	return [...document.querySelectorAll<SVGCircleElement>('[data-point]')];
@@ -142,5 +143,26 @@ describe('Chart.Line', () => {
 
 		expect(points()).toHaveLength(2);
 		expect(document.querySelector('[data-line]')!.getAttribute('d')).toMatch(/^M[^ML]*M[^ML]*$/);
+	});
+
+	it('gives the name of a mark to its series, when it has no series channel', () => {
+		render(NamedTest);
+		expect(points().map((p) => p.getAttribute('aria-label'))).toEqual([
+			'1, Revenue, 66',
+			'2, Revenue, 70',
+			'1, Cost, 40',
+			'2, Cost, 42'
+		]);
+		const legend = [...document.querySelectorAll('[data-legend-item]')];
+		expect(legend.map((item) => item.textContent?.trim())).toEqual(['Revenue', 'Cost']);
+		const headers = [...document.querySelectorAll('thead th')];
+		expect(headers.map((th) => th.textContent)).toEqual(['month', 'Revenue', 'Cost']);
+		const cells = [...document.querySelectorAll('tbody tr')].map((row) =>
+			[...row.children].map((cell) => cell.textContent)
+		);
+		expect(cells).toEqual([
+			['1', '66', '40'],
+			['2', '70', '42']
+		]);
 	});
 });

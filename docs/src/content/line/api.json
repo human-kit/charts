@@ -34,6 +34,13 @@
 					"description": "The series channel of this mark. It needs `data`. Without it, the mark uses the channel of the root."
 				},
 				{
+					"name": "name",
+					"type": "string",
+					"required": false,
+					"default": null,
+					"description": "The name of the series of this mark, when it has no series channel. The legend, the names of\nthe points and the data table show it. Give a name to each mark when two marks show two\nfields, for example the revenue and the cost."
+				},
+				{
 					"name": "r",
 					"type": "number",
 					"required": false,
