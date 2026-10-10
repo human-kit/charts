@@ -53,8 +53,6 @@ Put the categories on the y axis to make horizontal bars, and give the y scale t
 
 <Demo source={horizontalSource}><Horizontal /></Demo>
 
-In this version, give `margin` to a chart with horizontal bars. Without it, the measure of an axis with categories on y does not stop.
-
 For horizontal bars, the vertical arrows move the focus from one bar to the next bar in the series. The name of a bar, a row of the data table and the tooltip start with the category.
 
 ## Styles

@@ -30,6 +30,19 @@ describe('Chart.Bar with categories on y', () => {
 		expect(box(bars()[2])).toEqual([75, 0, 225, 100]);
 	});
 
+	it('sets the margins from the axes and keeps them stable', async () => {
+		render(HorizontalTest, { measure: true });
+		await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 50)));
+		const plot = document.querySelector('[data-axis="left"] [data-axis-line]')!;
+		const [top, bottom] = [Number(plot.getAttribute('y1')), Number(plot.getAttribute('y2'))];
+		// The band range runs from the top down, inside the 200 pixels of the chart.
+		expect(top).toBeGreaterThanOrEqual(0);
+		expect(bottom).toBeGreaterThan(top);
+		expect(bottom).toBeLessThanOrEqual(200);
+		const first = box(bars()[0]);
+		expect(first[1]).toBeGreaterThanOrEqual(top);
+	});
+
 	it('names each bar with the category first', () => {
 		render(HorizontalTest);
 		expect(bars()[0].getAttribute('aria-label')).toBe('Red, 2024, 10');

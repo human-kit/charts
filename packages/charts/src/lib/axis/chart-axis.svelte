@@ -49,7 +49,8 @@
 		const tickBox = ticksGroup.getBBox();
 		depth = horizontal ? tickBox.height : tickBox.width;
 		const box = group.getBBox();
-		const [start, end] = horizontal ? [range[0], range[1]] : [range[1], range[0]];
+		// A linear y range runs up and a band y range runs down: use the lower end as the start.
+		const [start, end] = [Math.min(range[0], range[1]), Math.max(range[0], range[1])];
 		const before = horizontal ? start - box.x : start - box.y;
 		const after = horizontal ? box.x + box.width - end : box.y + box.height - end;
 		const across =
