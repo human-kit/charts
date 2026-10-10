@@ -7,11 +7,13 @@
 	let {
 		stacked = true,
 		visibility = 'screen-reader',
-		caption
+		caption,
+		long = false
 	}: {
 		stacked?: boolean;
 		visibility?: 'visible' | 'screen-reader';
 		caption?: string;
+		long?: boolean;
 	} = $props();
 
 	const data: Row[] = [
@@ -35,12 +37,19 @@
 	width={300}
 	height={200}
 	margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+	style="width: 300px"
 >
 	<Chart.Title>Units per month</Chart.Title>
 	<Chart.Plot>
 		<Chart.Area {stacked} />
 	</Chart.Plot>
 	<Chart.Legend />
-	<Chart.Tooltip />
+	{#if long}
+		<Chart.Tooltip>
+			{#snippet children(tip)}<div style="width: 160px">{tip.xText}, a long text</div>{/snippet}
+		</Chart.Tooltip>
+	{:else}
+		<Chart.Tooltip />
+	{/if}
 	<Chart.DataTable {visibility} {caption} />
 </Chart.Root>

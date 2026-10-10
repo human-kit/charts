@@ -248,6 +248,8 @@
 	): ChartTick[] {
 		// A format from the consumer is also the format of the ticks.
 		const label = format ? full : scale.tickFormat(count, locale);
+		// A category is a name, not a step on a line: show each one while they have 32 pixels.
+		if (scale.kind === 'band') count = tickCount(scale.range, 32);
 		return scale
 			.ticks(count)
 			.map((value) => ({ value, position: scale(value), label: label(value) }));
@@ -302,6 +304,28 @@
 	function targetId(event: Event) {
 		const id = (event.target as Element | null)?.id;
 		return id && positions.has(id) ? id : null;
+	}
+
+	/**
+	 * The id of the point nearest to a position on the screen, within 40 pixels. A point can be
+	 * small, thus a pointer or a finger near it is enough.
+	 */
+	function nearest(clientX: number, clientY: number): string | null {
+		if (!plotElement) return null;
+		const box = plotElement.getBoundingClientRect();
+		const [px, py] = [clientX - box.left, clientY - box.top];
+		let best: string | null = null;
+		let distance = 40 * 40;
+		for (const entry of entries) {
+			const mark = marks.get(entry.mark);
+			entry.points.forEach((_, index) => {
+				const anchor = mark?.anchor(entry.series, index);
+				if (!anchor) return;
+				const d = (anchor[0] - px) ** 2 + (anchor[1] - py) ** 2;
+				if (d < distance) [best, distance] = [pointId(entry.mark, entry.series, index), d];
+			});
+		}
+		return best;
 	}
 
 	/** Selects the point, or clears the selection when the point is already selected. */
@@ -367,7 +391,7 @@
 			focused = null;
 		},
 		onclick(event) {
-			const id = targetId(event);
+			const id = targetId(event) ?? nearest(event.clientX, event.clientY);
 			if (id) select(id);
 		}
 	};
@@ -452,6 +476,7 @@
 		pointAt,
 		locate,
 		anchor: (mark, s, index) => marks.get(mark)?.anchor(s, index) ?? null,
+		nearest,
 		formatX: (value) => xValueFormat(value),
 		formatY: (value) => yValueFormat(value),
 		get focus() {

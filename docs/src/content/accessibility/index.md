@@ -85,7 +85,7 @@ The default `visibility` is `screen-reader`: the table is in the accessibility t
 
 ## Selection
 
-`Enter`, `Space` or a click selects the focused point. A second time clears the selection. The selected point has `aria-current="true"` and `data-selected`, and its cell in the data table has the same attributes. The table shows the selection, but a click on the table does not change it.
+`Enter`, `Space` or a click selects the focused point. A click or a tap less than 40 pixels from a point also selects it, because a point can be smaller than a finger. A second time clears the selection. The selected point has `aria-current="true"` and `data-selected`, and its cell in the data table has the same attributes. The table shows the selection, but a click on the table does not change it.
 
 ## What you must provide
 

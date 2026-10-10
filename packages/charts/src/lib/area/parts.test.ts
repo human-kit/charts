@@ -103,6 +103,48 @@ describe('Chart.Tooltip', () => {
 		expect(tooltip()).toBeNull();
 	});
 
+	it('opens on a tap, stays when the finger lifts, and closes on a tap out of the plot', async () => {
+		render(PartsTest);
+		const svg = document.querySelector('svg')!;
+		const box = svg.getBoundingClientRect();
+		const point = points()[4];
+		const at = {
+			clientX: box.left + Number(point.getAttribute('cx')) + 2,
+			clientY: box.top + Number(point.getAttribute('cy')) + 2,
+			pointerType: 'touch',
+			bubbles: true
+		};
+		svg.dispatchEvent(new PointerEvent('pointerdown', at));
+		svg.dispatchEvent(new PointerEvent('pointerleave', at));
+		await tick();
+		expect(tooltip()!.textContent).toContain('Coffee');
+
+		document.body.dispatchEvent(new PointerEvent('pointerdown', { ...at, clientY: 0 }));
+		await tick();
+		expect(tooltip()).toBeNull();
+
+		// A finger that starts to scroll the page closes it.
+		svg.dispatchEvent(new PointerEvent('pointerdown', at));
+		await tick();
+		expect(tooltip()).not.toBeNull();
+		svg.dispatchEvent(new PointerEvent('pointercancel', at));
+		await tick();
+		expect(tooltip()).toBeNull();
+	});
+
+	it('stays in the width of the figure at the first and the last point', async () => {
+		render(PartsTest, { long: true });
+		const figure = document.querySelector('figure')!.getBoundingClientRect();
+		points()[0].focus();
+		for (const key of ['{ArrowRight}', '{Home}', '{End}']) {
+			await userEvent.keyboard(key);
+			await tick();
+			const box = tooltip()!.getBoundingClientRect();
+			expect(box.left).toBeGreaterThanOrEqual(figure.left - 0.5);
+			expect(box.right).toBeLessThanOrEqual(figure.right + 0.5);
+		}
+	});
+
 	it('does not open for a focus from a pointer press', async () => {
 		render(PartsTest);
 		const point = points()[0];
