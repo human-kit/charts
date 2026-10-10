@@ -19,7 +19,6 @@
 	yScale={{ type: scaleBand }}
 	xFormat={{ style: 'percent' }}
 	height={220}
-	margin={{ top: 8, right: 16, bottom: 24, left: 80 }}
 	class="demo-chart"
 >
 	<Chart.Title>Share of the code in the repository</Chart.Title>

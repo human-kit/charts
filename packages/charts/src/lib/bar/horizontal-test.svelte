@@ -5,7 +5,10 @@
 
 	type Row = { team: string; year: string; goals: number };
 
-	let { layout = 'grouped' }: { layout?: 'grouped' | 'stacked' } = $props();
+	let {
+		layout = 'grouped',
+		measure = false
+	}: { layout?: 'grouped' | 'stacked'; measure?: boolean } = $props();
 
 	const data: Row[] = [
 		{ team: 'Red', year: '2024', goals: 10 },
@@ -27,12 +30,15 @@
 	locale="en-US"
 	width={300}
 	height={200}
-	margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+	margin={measure ? undefined : { top: 0, right: 0, bottom: 0, left: 0 }}
 	bind:selected
 >
 	<Chart.Title>Goals per team</Chart.Title>
 	<Chart.Plot>
 		<Chart.Axis position="left" />
+		{#if measure}
+			<Chart.Axis position="bottom" />
+		{/if}
 		<Chart.Bar {layout} groupPadding={0} />
 	</Chart.Plot>
 	<Chart.DataTable visibility="visible" />
