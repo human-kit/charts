@@ -119,6 +119,18 @@ describe('Chart.Line', () => {
 		expect(onSelect.mock.calls[2][0].datum).toEqual({ x: 1, y: 5, s: 'B' });
 	});
 
+	it('selects the nearest point with a click or a tap near it', async () => {
+		const onSelect = vi.fn();
+		render(LineTest, { onSelect });
+		const plot = document.querySelector('svg')!;
+		const point = points()[3];
+		// 12 pixels from a point of 3 pixels: on the plot, not on the point.
+		await userEvent.click(plot, {
+			position: { x: Number(point.getAttribute('cx')) + 12, y: Number(point.getAttribute('cy')) }
+		});
+		expect(onSelect.mock.calls.map(([p]) => `${p.series}:${p.x}`)).toEqual(['B:1']);
+	});
+
 	it('breaks the line at a row without a value, and gives that row no focus', () => {
 		render(LineTest, {
 			data: [

@@ -14,21 +14,6 @@
 	// The tooltip shows the point under the pointer, or the point that has the keyboard focus.
 	const id = $derived(dismissed ? null : (hoveredId ?? (ctx.focus.visible ? ctx.focus.id : null)));
 
-	/** The id of the point nearest to a position in the plot, within 40 pixels. */
-	function nearest(px: number, py: number): string | null {
-		let best: string | null = null;
-		let distance = 40 * 40;
-		for (const entry of ctx.entries) {
-			entry.points.forEach((_, index) => {
-				const anchor = ctx.anchor(entry.mark, entry.series, index);
-				if (!anchor) return;
-				const d = (anchor[0] - px) ** 2 + (anchor[1] - py) ** 2;
-				if (d < distance) [best, distance] = [ctx.pointId(entry.mark, entry.series, index), d];
-			});
-		}
-		return best;
-	}
-
 	const tip = $derived.by(() => {
 		const found = ctx.locate(id);
 		if (!found) return null;
@@ -56,12 +41,20 @@
 		const plot = ctx.plotElement;
 		if (!plot) return;
 		const onPointerMove = (event: PointerEvent) => {
-			const box = plot.getBoundingClientRect();
-			const next = nearest(event.clientX - box.left, event.clientY - box.top);
+			const next = ctx.nearest(event.clientX, event.clientY);
 			if (next !== hoveredId) dismissed = false;
 			hoveredId = next;
 		};
-		const onPointerLeave = () => (hoveredId = null);
+		// A finger leaves the plot when it lifts. The tooltip of a tap stays until the next tap.
+		const onPointerLeave = (event: PointerEvent) => {
+			if (event.pointerType !== 'touch') hoveredId = null;
+		};
+		// A finger that scrolls the page cancels its pointer: that is not a tap.
+		const onPointerCancel = () => (hoveredId = null);
+		// A tap out of the plot closes the tooltip of a tap.
+		const onOutside = (event: PointerEvent) => {
+			if (!plot.contains(event.target as Node)) hoveredId = null;
+		};
 		const onKeyDown = (event: KeyboardEvent) => {
 			// Only a visible tooltip uses the key; otherwise a dialog around the chart gets it.
 			if (event.key !== 'Escape' || !tip) return;
@@ -70,11 +63,17 @@
 			hoveredId = null;
 		};
 		plot.addEventListener('pointermove', onPointerMove);
+		plot.addEventListener('pointerdown', onPointerMove);
 		plot.addEventListener('pointerleave', onPointerLeave);
+		plot.addEventListener('pointercancel', onPointerCancel);
 		plot.addEventListener('keydown', onKeyDown);
+		document.addEventListener('pointerdown', onOutside);
 		return () => {
+			document.removeEventListener('pointerdown', onOutside);
+			plot.removeEventListener('pointerdown', onPointerMove);
 			plot.removeEventListener('pointermove', onPointerMove);
 			plot.removeEventListener('pointerleave', onPointerLeave);
+			plot.removeEventListener('pointercancel', onPointerCancel);
 			plot.removeEventListener('keydown', onKeyDown);
 		};
 	});
@@ -84,10 +83,23 @@
 	const plotOffset = $derived.by(() => {
 		const plot = ctx.plotElement;
 		const figure = plot?.closest('figure');
-		if (!tip || !plot || !figure) return [0, 0];
+		if (!tip || !plot || !figure) return [0, 0, 0];
 		const a = plot.getBoundingClientRect();
 		const b = figure.getBoundingClientRect();
-		return [a.left - b.left - figure.clientLeft, a.top - b.top - figure.clientTop];
+		return [
+			a.left - b.left - figure.clientLeft,
+			a.top - b.top - figure.clientTop,
+			figure.clientWidth
+		];
+	});
+
+	// The tooltip stays in the width of the figure: near an edge, it moves away from the point.
+	// Thus it does not make the page wider on a narrow screen.
+	let width = $state(0);
+	const left = $derived.by(() => {
+		const center = plotOffset[0] + (tip?.x ?? 0);
+		const half = width / 2;
+		return Math.max(half, Math.min(center, plotOffset[2] - half));
 	});
 </script>
 
@@ -102,7 +114,8 @@
 		data-tooltip=""
 		data-series={tip.point.series || undefined}
 		style:position="absolute"
-		style:left="{plotOffset[0] + tip.x}px"
+		bind:offsetWidth={width}
+		style:left="{left}px"
 		style:top="{plotOffset[1] + tip.y - offset}px"
 		style:transform="translate(-50%, -100%)"
 		style:pointer-events="none"

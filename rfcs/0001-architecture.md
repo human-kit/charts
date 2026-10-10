@@ -279,6 +279,11 @@ category.
 
 - `Chart.Tooltip` opens on the focused point and on the point under the
   pointer.
+- On a touch screen, a tap opens the tooltip on the nearest point. It stays
+  when the finger lifts. A tap out of the plot, or a finger that scrolls the
+  page, closes it.
+- The tooltip stays in the width of the figure. Near an edge, it moves away
+  from the point, thus it does not make the page wider on a narrow screen.
 - It opens on a focus only when the focus came from the keyboard, as the
   tooltip of `@human-kit/ui` does.
 - The screen reader reads the accessible name of the point. The tooltip does

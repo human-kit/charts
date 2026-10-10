@@ -34,6 +34,8 @@ The tooltip is HTML, thus it goes in `Chart.Root` and not in `Chart.Plot`. It ma
 ## Open and close
 
 - The pointer opens the tooltip on the nearest point, when the point is less than 40 pixels from the pointer.
+- On a touch screen, a tap opens the tooltip on the nearest point. The tooltip stays when the finger lifts. A tap out of the plot closes it, and a finger that scrolls the page also closes it.
+- Near an edge of the figure, the tooltip moves away from the point. It stays in the width of the figure, thus it does not make the page wider on a narrow screen.
 - The keyboard focus opens the tooltip on the focused point. A focus from a pointer press does not open it.
 - `Escape` closes the tooltip. A move to another point opens it again.
 
