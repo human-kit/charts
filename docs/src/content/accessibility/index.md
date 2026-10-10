@@ -31,7 +31,7 @@ With NVDA and Chrome, `Tab` reads "Downloads per year, in thousands, chart, Core
 
 The title, the legend and the data table are out of the plot, thus they stay in browse mode. Use the data table to read the values cell by cell.
 
-The test used NVDA. JAWS and VoiceOver are not tested yet.
+The test used NVDA, and a second test used JAWS. VoiceOver is not tested.
 
 ## Keyboard
 

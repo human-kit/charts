@@ -1,6 +1,6 @@
 # RFC 0001: Architecture of `@human-kit/charts`
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Date:** 2026-10-09
 - **Scope:** version 1
 
@@ -253,8 +253,23 @@ The `application` role removes the browse mode in the plot only. The title, the
 legend and the data table stay in browse mode, and the data table gives each
 value in a table that the user can read cell by cell.
 
-JAWS and VoiceOver are not tested yet. A test with them must occur before this
-RFC changes to "Accepted".
+A second test used JAWS 2026 with Chrome on Windows, with the same real key
+presses on the line demo and the final roles (`application` and `img`). The
+arrow keys come to the chart, and JAWS reads each point:
+
+| Key          | JAWS reads                                  |
+| ------------ | ------------------------------------------- |
+| `Tab`        | "Core, 2018, Core, 40, graphic, Core group" |
+| `ArrowRight` | "2019, Core, 46, graphic"                   |
+| `ArrowRight` | "2020, Core, 55, graphic"                   |
+| `ArrowDown`  | "Icons group, 2020, Icons, 30, graphic"     |
+| `ArrowUp`    | "Core group, 2020, Core, 55, graphic"       |
+
+JAWS does not read the name of the chart on `Tab`, but NVDA does. The title is
+before the plot, thus a user in browse mode reads it before the plot.
+
+The test with NVDA is the acceptance test of this RFC. The test with JAWS is
+an additional check. VoiceOver is not tested.
 
 ### Keyboard
 
@@ -272,6 +287,11 @@ points, as in a grid of the WAI-ARIA APG.
 | `Escape`                  | Closes the tooltip. The focus stays on the point.                                                           |
 
 The keys do not wrap: at the last point of a series, `ArrowRight` does nothing.
+
+A stack shows its series in the order of the keyboard. On a vertical stack, the
+first series is on the top, and `ArrowDown` goes down on the screen. On a
+horizontal stack, the first series is next to zero, and `ArrowRight` goes to the
+right. Thus the order of the legend is also the order of the stack.
 
 The horizontal arrows follow the direction of the x axis on the screen, not the
 text direction. A chart does not reverse its x axis in a right-to-left page.
@@ -386,7 +406,7 @@ changesets. The docs site is on Vercel and uses `@human-kit/markdown`.
 - Browser tests for the keyboard table, the focus contract and the selection.
 - Server tests: each part makes the same markup on the server as on the client.
 - An accessibility tree test for each mark: names, roles and hidden elements.
-- A manual test with NVDA, JAWS and VoiceOver before each minor version.
+- A manual test with NVDA before each minor version.
 
 ## Prototype plan
 
@@ -434,11 +454,11 @@ Steps 1 and 2 are complete (2026-10-09).
 
 ## Open questions
 
-1. **The roles of the points.** Decided for NVDA: `role="application"` on the
+1. **The roles of the points.** Decided for NVDA and JAWS: `role="application"` on the
    plot and `role="img"` on each point (see "Screen reader test"). The
    `graphics-symbol` role gives the same result as `img` and less support. A
    `grid` is not necessary, because `application` already gives the arrow keys
-   to the chart. JAWS and VoiceOver must confirm the decision.
+   to the chart. JAWS gives the same result. VoiceOver is not tested.
 2. **The type of the marks.** Decided: a mark can have its own channels only
    when it has its own `data`. A child component cannot get the generic type
    of its parent in Svelte 5, thus a channel on a mark without `data` cannot be
@@ -455,8 +475,17 @@ Steps 1 and 2 are complete (2026-10-09).
    follows the lines. A user who cannot see the chart knows only the order of
    the legend. When two marks show series with the same name, `ArrowDown` goes
    from a series in one mark to the series with the same name in the next mark.
-4. **The keyboard model for a bar chart** with many series: the prototype must
-   confirm that the up and down arrows are clear to the user.
+4. **The keyboard model for a bar chart.** Decided: the same model as for a
+   line. The arrows along the axis of the categories move in a series, and the
+   other arrows move between the series, in the order of the legend. A stack
+   puts its series in that order on the screen: on a vertical stack, the
+   first series is on the top, thus `ArrowDown` goes down on the screen. On a
+   horizontal stack, the first series is next to zero, thus `ArrowRight` goes
+   to the right. Before, the first series was at the bottom of a vertical
+   stack, and `ArrowDown` went up. In a grouped layout, `ArrowDown` goes to the
+   next bar of the group, which is on its right. The name of the bar gives the
+   series, and the other candidate, the order of the screen, makes a bar chart
+   different from a line chart.
 5. **The default width on the server.** Decided: 640 pixels in the `viewBox`,
    and `width="100%"` on the SVG until the first measure. A fixed width of 640
    pixels made a page wider than a phone screen until the hydration. The
