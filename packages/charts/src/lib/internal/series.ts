@@ -1,9 +1,13 @@
-import type { ChartPoint, ChartSeries, ChartValue } from '../root/context.js';
+import type { ChartSeries, ChartValue } from '../root/context.js';
 import { read, type Channel } from './channel.js';
 
-/** Whether a value can have a position: a category, a date, or a finite number. */
+/**
+ * Whether a value can have a position: a category, a valid date, or a finite number. `null`,
+ * `undefined` and other types have no position: they are not zero.
+ */
 export function isValue(value: unknown): value is ChartValue {
-	return typeof value === 'string' || Number.isFinite(+(value as number));
+	if (typeof value === 'string') return true;
+	return (typeof value === 'number' || value instanceof Date) && Number.isFinite(+value);
 }
 
 /**
@@ -16,22 +20,24 @@ export function groupRows<T>(
 	y: Channel<T, ChartValue> | undefined,
 	series: Channel<T, string> | undefined
 ): ChartSeries<T>[] {
-	const out = new Map<string, ChartPoint<T>[]>();
+	const out = new Map<string, ChartSeries<T>>();
+	// The series that have a row without a value after their last point.
+	const open = new Set<string>();
 	if (!x || !y) return [];
 	rows.forEach((datum, index) => {
-		const point = {
-			datum,
-			index,
-			series: series ? String(read(series, datum, index)) : '',
-			x: read(x, datum, index),
-			y: read(y, datum, index)
-		};
-		if (!isValue(point.x) || !isValue(point.y)) return;
-		let points = out.get(point.series);
-		if (!points) out.set(point.series, (points = []));
-		points.push(point);
+		const name = series ? String(read(series, datum, index) ?? '') : '';
+		const [xv, yv] = [read(x, datum, index), read(y, datum, index)];
+		let group = out.get(name);
+		if (!isValue(xv) || !isValue(yv)) {
+			if (group?.points.length) open.add(name);
+			return;
+		}
+		const point = { datum, index, series: name, x: xv, y: yv };
+		if (!group) out.set(name, (group = { name, points: [], breaks: [] }));
+		if (open.delete(name)) group.breaks.push(group.points.length);
+		group.points.push(point);
 	});
-	return [...out].map(([name, points]) => ({ name, points }));
+	return [...out.values()];
 }
 
 /** A key of a value for a stack: the same category, date or number gives the same key. */

@@ -119,16 +119,16 @@ describe('Chart.Line', () => {
 		expect(onSelect.mock.calls[2][0].datum).toEqual({ x: 1, y: 5, s: 'B' });
 	});
 
-	it('takes no focus on a point without a value', () => {
+	it('breaks the line at a row without a value, and gives that row no focus', () => {
 		render(LineTest, {
 			data: [
 				{ x: 1, y: 1, s: 'A' },
-				{ x: 2, y: NaN, s: 'A' },
+				{ x: 2, y: null, s: 'A' },
 				{ x: 3, y: 3, s: 'A' }
 			]
 		});
 
 		expect(points()).toHaveLength(2);
-		expect(document.querySelector('[data-line]')!.getAttribute('d')).toMatch(/^M[^M]*L[^M]*$/);
+		expect(document.querySelector('[data-line]')!.getAttribute('d')).toMatch(/^M[^ML]*M[^ML]*$/);
 	});
 });

@@ -73,7 +73,8 @@
 		return out;
 	});
 
-	// The marks, in mount order. The order of the marks is the order of the series for the keyboard.
+	// The marks, in mount order. The series names in the order of their first appearance in the
+	// marks are the order of the legend.
 	const marks = new SvelteMap<string, ChartMark>();
 	let markCount = 0;
 
@@ -85,7 +86,12 @@
 				if (s.points.length) out.push({ mark, series: index, points: s.points, horizontal });
 			});
 		}
-		return out;
+		// The keyboard goes through the series in the order of the legend: the series of the same
+		// name in two marks come one after the other. The sort is stable, thus the marks keep their order.
+		const order = [...new Set(out.map((entry) => entry.points[0].series))];
+		return out.sort(
+			(a, b) => order.indexOf(a.points[0].series) - order.indexOf(b.points[0].series)
+		);
 	});
 
 	function pointId(mark: string, series: number, index: number) {

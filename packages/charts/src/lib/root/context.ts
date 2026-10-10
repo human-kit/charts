@@ -43,6 +43,8 @@ export type ChartTooltipState<T = unknown> = {
 export type ChartSeries<T = unknown> = {
 	name: string;
 	points: ChartPoint<T>[];
+	/** The indexes in `points` that come after a row without a valid value: a line breaks there. */
+	breaks: number[];
 };
 
 /** A mark, as it registers with the root. */
