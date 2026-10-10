@@ -144,6 +144,8 @@ export type ChartContext = {
 	locate(id: string | null): { entry: ChartEntry; index: number } | null;
 	/** The position in pixels where the tooltip of a point points, from its mark. */
 	anchor(mark: string, series: number, index: number): [number, number] | null;
+	/** The id of the point nearest to a position on the screen, within 40 pixels, or `null`. */
+	nearest(clientX: number, clientY: number): string | null;
 	/** An x value (as a number for the x scale) as text, in the format of the chart. */
 	formatX(value: number): string;
 	/** A y value (as a number for the y scale) as text, in the format of the chart. */

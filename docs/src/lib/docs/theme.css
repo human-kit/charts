@@ -479,6 +479,21 @@
 		padding: 0.5rem 0.75rem;
 		border-bottom: 1px solid var(--border-subtle);
 	}
+
+	/*
+	 * On a narrow screen, a long code value (a subpath, an attribute) must not push the
+	 * table past the page: the cells break it and the table stays in the column. Less
+	 * padding gives the text more room.
+	 */
+	.hd-prose :is(th, td) {
+		overflow-wrap: anywhere;
+	}
+
+	@media (max-width: 40rem) {
+		.hd-prose :is(th, td) {
+			padding-inline: 0.375rem;
+		}
+	}
 }
 
 /*

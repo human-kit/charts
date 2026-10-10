@@ -42,9 +42,20 @@
 	// The size of the tick labels across the axis. The axis label goes after it.
 	let depth = $state(untrack(() => (horizontal ? 16 : 32)));
 
+	// A web font that loads after the first measure changes the size of the labels.
+	let fonts = $state(0);
 	$effect(() => {
-		// Measure again after each change of the ticks, the label and the position.
-		void [ticks, label, offset, range];
+		const set = document.fonts;
+		if (!set) return;
+		const remeasure = () => fonts++;
+		set.addEventListener('loadingdone', remeasure);
+		void set.ready.then(remeasure);
+		return () => set.removeEventListener('loadingdone', remeasure);
+	});
+
+	$effect(() => {
+		// Measure again after each change of the ticks, the label, the position and the fonts.
+		void [ticks, label, offset, range, fonts];
 		if (!group || !ticksGroup) return;
 		const tickBox = ticksGroup.getBBox();
 		depth = horizontal ? tickBox.height : tickBox.width;

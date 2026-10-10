@@ -96,7 +96,7 @@ You can give `margin` for some sides only, for example `margin={{ left: 48 }}`.
 ## Focus and selection
 
 - `bind:focused` holds the point that has the focus, or `null`. The root writes it. It does not read it.
-- `bind:selected` holds the selected point, or `null`. `Enter`, `Space` or a click selects a point, and a second time clears the selection.
+- `bind:selected` holds the selected point, or `null`. `Enter`, `Space` or a click selects a point, and a second time clears the selection. A click or a tap less than 40 pixels from a point also selects it.
 - `onSelect` receives the point that the user activated.
 
 A point is a `ChartPoint`. It has the row (`datum`) and the index of the row in the data of its mark. It also has the name of the series, and the x and y values. The row has the type of your data.
