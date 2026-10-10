@@ -1,0 +1,44 @@
+{
+	"component": "legend",
+	"parts": [
+		{
+			"name": "Legend",
+			"description": "A list of the series of the chart. It makes a `<ul>` with one item per series.",
+			"element": "ul",
+			"props": [
+				{
+					"name": "children",
+					"type": "Snippet<[{ name: string; index: number }]>",
+					"required": false,
+					"default": null,
+					"description": "The content of an item. It receives the name and the index of the series. Without it, an\nitem shows an empty `data-swatch` element and the name."
+				},
+				{
+					"name": "class",
+					"type": "string",
+					"required": false,
+					"default": null,
+					"description": "The CSS class names of the list."
+				}
+			],
+			"dataAttributes": [
+				{
+					"name": "data-legend",
+					"description": "On the list."
+				},
+				{
+					"name": "data-legend-item",
+					"description": "On each item."
+				},
+				{
+					"name": "data-series",
+					"description": "On each item. The value is the name of the series."
+				},
+				{
+					"name": "data-swatch",
+					"description": "On the empty element at the start of an item without children."
+				}
+			]
+		}
+	]
+}

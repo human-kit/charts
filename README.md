@@ -59,14 +59,18 @@ of the CSS.
 ## Repository layout
 
 - `packages/charts/`: the publishable package, `@human-kit/charts`.
+- `docs/`: the documentation site, with the live demos.
 - `rfcs/`: the design documents.
-- `scripts/`: the size measure and its fixtures.
+- `scripts/`: the size measure, the ASD-STE100 check and the generators of the docs.
 
 ## Development
 
 ```bash
 pnpm install
 pnpm dev          # the playground
+pnpm dev:docs     # the documentation site
+pnpm build:docs   # build the documentation site
+pnpm docs:api     # write the API tables of the docs from the code
 pnpm test         # the browser tests
 pnpm test:ssr     # the server tests
 pnpm size         # the gzip size of the fixtures
