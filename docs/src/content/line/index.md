@@ -42,6 +42,8 @@ Each point is a circle with the radius `r`. The default is 3 pixels. Give `r={0}
 
 The order of the points is the order of the rows. Sort the rows by x before you give them to the chart.
 
+A row without a valid x or y value has no point, and the line stops there. The line starts again at the next row with a value. A value is valid when it is a string, a finite number or a valid date. Thus `null`, `undefined` and `NaN` are not valid. They are not zero. A row without a value is not a focus target, and it is not in the data table. The same rule applies to areas.
+
 ## A mark with its own data
 
 A mark can replace the `data`, `x`, `y` and `series` of the root with its own props. Thus one chart can show two sets of rows with different fields, on the same scales. The values of the mark go into the domains of the scales.

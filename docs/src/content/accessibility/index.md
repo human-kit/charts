@@ -27,15 +27,15 @@ Accessibility is the primary requirement of this library. A keyboard user and a 
 
 The plot is one tab stop. The focus moves with a roving `tabindex` over the points.
 
-| Key                       | Action                                                          |
-| ------------------------- | --------------------------------------------------------------- |
-| `Tab`                     | Moves the focus into the plot, to the last focused point.       |
-| `ArrowRight`, `ArrowLeft` | Moves to the next or the previous point in the series.          |
-| `ArrowUp`, `ArrowDown`    | Moves to the point with the closest x value in another series.  |
-| `Home`, `End`             | Moves to the first or the last point in the series.             |
-| `PageUp`, `PageDown`      | Moves ten points in the series.                                 |
-| `Enter`, `Space`          | Selects the point, or clears the selection of a selected point. |
-| `Escape`                  | Closes the tooltip. The focus stays on the point.               |
+| Key                       | Action                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| `Tab`                     | Moves the focus into the plot, to the last focused point.                       |
+| `ArrowRight`, `ArrowLeft` | Moves to the next or the previous point in the series.                          |
+| `ArrowUp`, `ArrowDown`    | Moves to the point with the closest x value in the previous or the next series. |
+| `Home`, `End`             | Moves to the first or the last point in the series.                             |
+| `PageUp`, `PageDown`      | Moves ten points in the series.                                                 |
+| `Enter`, `Space`          | Selects the point, or clears the selection of a selected point.                 |
+| `Escape`                  | Closes the tooltip. The focus stays on the point.                               |
 
 The keys do not wrap. At the last point of a series, `ArrowRight` does nothing.
 
@@ -43,7 +43,7 @@ The horizontal arrows follow the direction of the x axis on the screen, not the 
 
 A mark can have its categories on the y axis, as horizontal bars do. Then the vertical arrows move in the series, and the horizontal arrows move between the series.
 
-`ArrowUp` and `ArrowDown` move between the series in the order of the marks and of the data. This order does not change when two lines cross on the screen.
+`ArrowUp` and `ArrowDown` move between the series in the order of the legend. This order does not change when two lines cross on the screen. Two marks can show a series with the same name, for example an area and a line. Then `ArrowDown` goes to that series in the next mark before it goes to the next series.
 
 ## Names
 

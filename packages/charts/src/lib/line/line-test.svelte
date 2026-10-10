@@ -2,7 +2,7 @@
 	import * as Chart from '../index.parts.js';
 	import type { ChartPoint } from '../root/context.js';
 
-	type Row = { x: number; y: number; s: string };
+	type Row = { x: number; y: number | null; s: string };
 
 	let {
 		data = [

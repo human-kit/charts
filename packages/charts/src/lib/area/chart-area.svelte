@@ -69,8 +69,19 @@
 		{@const top = s.points.map((_, i) => position(si, i, 1))}
 		{@const bottom = s.points.map((_, i) => position(si, i, 0))}
 		<g role="group" aria-label={s.name || undefined} data-series={s.name || undefined}>
-			<path d={areaPath(top, bottom)} fill="currentColor" aria-hidden="true" data-area="" />
-			<path d={linePath(top)} fill="none" stroke="currentColor" aria-hidden="true" data-line="" />
+			<path
+				d={areaPath(top, bottom, s.breaks)}
+				fill="currentColor"
+				aria-hidden="true"
+				data-area=""
+			/>
+			<path
+				d={linePath(top, s.breaks)}
+				fill="none"
+				stroke="currentColor"
+				aria-hidden="true"
+				data-line=""
+			/>
 			{#each s.points as p, i (i)}
 				{@const attributes = ctx.point(registration.id, si, i, p as ChartPoint)}
 				<!-- A point is hidden by default, and it grows when it has the focus. -->

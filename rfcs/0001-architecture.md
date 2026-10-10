@@ -232,15 +232,15 @@ with NVDA, JAWS and VoiceOver before this RFC changes to "Accepted".
 The plot is one tab stop. The focus moves with a roving `tabindex` over the
 points, as in a grid of the WAI-ARIA APG.
 
-| Key                       | Action                                                         |
-| ------------------------- | -------------------------------------------------------------- |
-| `Tab`                     | Moves the focus into the plot, to the last focused point.      |
-| `ArrowRight`, `ArrowLeft` | Moves to the next or the previous point in the series.         |
-| `ArrowUp`, `ArrowDown`    | Moves to the point with the closest x value in another series. |
-| `Home`, `End`             | Moves to the first or the last point in the series.            |
-| `PageUp`, `PageDown`      | Moves ten points in the series.                                |
-| `Enter`, `Space`          | Selects the point and calls `onSelect`.                        |
-| `Escape`                  | Closes the tooltip. The focus stays on the point.              |
+| Key                       | Action                                                                                                      |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `Tab`                     | Moves the focus into the plot, to the last focused point.                                                   |
+| `ArrowRight`, `ArrowLeft` | Moves to the next or the previous point in the series.                                                      |
+| `ArrowUp`, `ArrowDown`    | Moves to the point with the closest x value in the previous or the next series, in the order of the legend. |
+| `Home`, `End`             | Moves to the first or the last point in the series.                                                         |
+| `PageUp`, `PageDown`      | Moves ten points in the series.                                                                             |
+| `Enter`, `Space`          | Selects the point and calls `onSelect`.                                                                     |
+| `Escape`                  | Closes the tooltip. The focus stays on the point.                                                           |
 
 The keys do not wrap: at the last point of a series, `ArrowRight` does nothing.
 
@@ -403,10 +403,12 @@ Steps 1 and 2 are complete (2026-10-09).
    its parent in Svelte 5. Thus a mark without its own `data` cannot check the
    field names of the root. The candidates are a typed factory, for example
    `const Chart = createChart<Sale>()`, and the root-level channels only.
-3. **The order of the series for `ArrowUp` and `ArrowDown`.** The candidates
-   are the order of the legend, which does not change, and the order on the
-   screen at the focused x value, which follows the lines. A user who
-   cannot see the chart knows only the order of the legend.
+3. **The order of the series for `ArrowUp` and `ArrowDown`.** Decided: the
+   order of the legend. The candidates were the order of the legend, which does
+   not change, and the order on the screen at the focused x value, which
+   follows the lines. A user who cannot see the chart knows only the order of
+   the legend. When two marks show series with the same name, `ArrowDown` goes
+   from a series in one mark to the series with the same name in the next mark.
 4. **The keyboard model for a bar chart** with many series: the prototype must
    confirm that the up and down arrows are clear to the user.
 5. **The default width on the server**, and how the chart shows the change

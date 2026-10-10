@@ -49,7 +49,7 @@
 	{#each groups as s, si (s.name)}
 		<g role="group" aria-label={s.name || undefined} data-series={s.name || undefined}>
 			<path
-				d={linePath(s.points.map(at))}
+				d={linePath(s.points.map(at), s.breaks)}
 				fill="none"
 				stroke="currentColor"
 				aria-hidden="true"
