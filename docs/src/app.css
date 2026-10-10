@@ -1,0 +1,80 @@
+@import 'tailwindcss';
+@import './lib/docs/theme.css';
+@import './lib/docs/chart-demos.css';
+
+@plugin "@toolwind/corner-shape";
+@plugin "tailwindcss-animate";
+
+@theme {
+	--font-sans: 'Geist Variable', sans-serif;
+	--font-serif: 'Roboto Serif Variable', serif;
+
+	/*
+	 * 15px-based type scale (the browser default is 16px). The rem base stays 16px
+	 * so spacing/sizing is unaffected — only the font-size utilities shift down by
+	 * 15/16. Line-heights are left as Tailwind's unitless ratios, so they scale to
+	 * the new sizes automatically.
+	 */
+	--text-xs: 0.703125rem; /* 11.25px */
+	--text-sm: 0.8203125rem; /* 13.125px */
+	--text-base: 0.9375rem; /* 15px */
+	--text-lg: 1.0546875rem; /* 16.875px */
+	--text-xl: 1.171875rem; /* 18.75px */
+	--text-2xl: 1.40625rem; /* 22.5px */
+	--text-3xl: 1.7578125rem; /* 28.125px */
+	--text-4xl: 2.109375rem; /* 33.75px */
+	--text-5xl: 2.8125rem; /* 45px */
+}
+
+/*
+ * Touch devices: never let an editable control render below 16px.
+ *
+ * Mobile Safari auto-zooms the page when a field smaller than 16px takes focus,
+ * and it does not zoom back out — the reader is left stranded mid-page. Every
+ * field here is `text-sm` (13.125px), and the 15px-based scale above means even
+ * `text-base` would still trip it, so the floor has to be an explicit 16px
+ * rather than a utility class.
+ *
+ * `!important` is deliberate: these have to outrank the `text-sm` utility on the
+ * elements themselves, and no control in the docs is intentionally larger, so
+ * there is nothing for it to clobber. Scoped to `pointer: coarse` so the desktop
+ * type scale is untouched.
+ *
+ * `[contenteditable]` covers the date/time segments, which are editable spans —
+ * Safari zooms for those too, not just <input>.
+ */
+@media (pointer: coarse) {
+	input,
+	select,
+	textarea,
+	[contenteditable]:not([contenteditable='false']) {
+		font-size: 16px !important;
+	}
+}
+
+/*
+ * Raises a control's TAP area to the 24px WCAG 2.5.8 floor on touch devices
+ * without changing a pixel of how it looks: the box is an overlaid
+ * pseudo-element, so it never affects layout or the neighbours' positions.
+ *
+ * 24px and not the roomier 44px on purpose. These controls sit close together
+ * (a tree row's chevron and checkbox are 6px apart), and overlapping hit areas
+ * mean a tap lands on whichever element comes later in the DOM — hitting the
+ * WRONG control is worse than a small one. Where a control is genuinely
+ * isolated, widen the gap first, then this can grow.
+ */
+@utility touch-target {
+	@media (pointer: coarse) {
+		position: relative;
+
+		&::after {
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			translate: -50% -50%;
+			width: max(100%, 24px);
+			height: max(100%, 24px);
+		}
+	}
+}
