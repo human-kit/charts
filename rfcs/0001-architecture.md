@@ -253,8 +253,23 @@ The `application` role removes the browse mode in the plot only. The title, the
 legend and the data table stay in browse mode, and the data table gives each
 value in a table that the user can read cell by cell.
 
-JAWS and VoiceOver are not tested yet. A test with them must occur before this
-RFC changes to "Accepted".
+A second test used JAWS 2026 with Chrome on Windows, with the same real key
+presses on the line demo and the final roles (`application` and `img`). The
+arrow keys come to the chart, and JAWS reads each point:
+
+| Key          | JAWS reads                                  |
+| ------------ | ------------------------------------------- |
+| `Tab`        | "Core, 2018, Core, 40, graphic, Core group" |
+| `ArrowRight` | "2019, Core, 46, graphic"                   |
+| `ArrowRight` | "2020, Core, 55, graphic"                   |
+| `ArrowDown`  | "Icons group, 2020, Icons, 30, graphic"     |
+| `ArrowUp`    | "Core group, 2020, Core, 55, graphic"       |
+
+JAWS does not read the name of the chart on `Tab`, but NVDA does. The title is
+before the plot, thus a user in browse mode reads it before the plot.
+
+VoiceOver is not tested yet. A test with it must occur before this RFC changes
+to "Accepted".
 
 ### Keyboard
 
@@ -439,11 +454,11 @@ Steps 1 and 2 are complete (2026-10-09).
 
 ## Open questions
 
-1. **The roles of the points.** Decided for NVDA: `role="application"` on the
+1. **The roles of the points.** Decided for NVDA and JAWS: `role="application"` on the
    plot and `role="img"` on each point (see "Screen reader test"). The
    `graphics-symbol` role gives the same result as `img` and less support. A
    `grid` is not necessary, because `application` already gives the arrow keys
-   to the chart. JAWS and VoiceOver must confirm the decision.
+   to the chart. JAWS confirms the decision. VoiceOver must confirm it.
 2. **The type of the marks.** Decided: a mark can have its own channels only
    when it has its own `data`. A child component cannot get the generic type
    of its parent in Svelte 5, thus a channel on a mark without `data` cannot be
