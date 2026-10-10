@@ -45,7 +45,10 @@
 	// The start and the end of each bar, in data values.
 	const spans = $derived(
 		layout === 'stacked'
-			? stack(groups.map((s) => s.points.map((p) => ({ key: stackKey(category(p)), y: value(p) }))))
+			? stack(
+					groups.map((s) => s.points.map((p) => ({ key: stackKey(category(p)), y: value(p) }))),
+					!horizontal
+				)
 			: groups.map((s) => s.points.map((p): [number, number] => [0, value(p)]))
 	);
 

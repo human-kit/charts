@@ -273,6 +273,11 @@ points, as in a grid of the WAI-ARIA APG.
 
 The keys do not wrap: at the last point of a series, `ArrowRight` does nothing.
 
+A stack shows its series in the order of the keyboard. On a vertical stack, the
+first series is on the top, and `ArrowDown` goes down on the screen. On a
+horizontal stack, the first series is next to zero, and `ArrowRight` goes to the
+right. Thus the order of the legend is also the order of the stack.
+
 The horizontal arrows follow the direction of the x axis on the screen, not the
 text direction. A chart does not reverse its x axis in a right-to-left page.
 
@@ -455,8 +460,17 @@ Steps 1 and 2 are complete (2026-10-09).
    follows the lines. A user who cannot see the chart knows only the order of
    the legend. When two marks show series with the same name, `ArrowDown` goes
    from a series in one mark to the series with the same name in the next mark.
-4. **The keyboard model for a bar chart** with many series: the prototype must
-   confirm that the up and down arrows are clear to the user.
+4. **The keyboard model for a bar chart.** Decided: the same model as for a
+   line. The arrows along the axis of the categories move in a series, and the
+   other arrows move between the series, in the order of the legend. A stack
+   puts its series in that order on the screen: on a vertical stack, the
+   first series is on the top, thus `ArrowDown` goes down on the screen. On a
+   horizontal stack, the first series is next to zero, thus `ArrowRight` goes
+   to the right. Before, the first series was at the bottom of a vertical
+   stack, and `ArrowDown` went up. In a grouped layout, `ArrowDown` goes to the
+   next bar of the group, which is on its right. The name of the bar gives the
+   series, and the other candidate, the order of the screen, makes a bar chart
+   different from a line chart.
 5. **The default width on the server.** Decided: 640 pixels in the `viewBox`,
    and `width="100%"` on the SVG until the first measure. A fixed width of 640
    pixels made a page wider than a phone screen until the hydration. The

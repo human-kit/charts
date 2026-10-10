@@ -39,7 +39,10 @@
 	// The bottom and the top of the area at each point, in data values.
 	const spans = $derived(
 		stacked
-			? stack(groups.map((s) => s.points.map((p) => ({ key: stackKey(p.x), y: +p.y }))))
+			? stack(
+					groups.map((s) => s.points.map((p) => ({ key: stackKey(p.x), y: +p.y }))),
+					true
+				)
 			: groups.map((s) => s.points.map((p): [number, number] => [0, +p.y]))
 	);
 
