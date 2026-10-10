@@ -1,0 +1,6 @@
+node_modules
+.svelte-kit
+docs/.svelte-kit
+docs/.vercel
+packages/charts/dist
+packages/charts/.svelte-kit
