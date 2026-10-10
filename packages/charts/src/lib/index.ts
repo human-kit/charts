@@ -21,6 +21,7 @@ export type {
 	ChartTitleProps,
 	ChartPlotProps,
 	ChartLineProps,
+	ChartMarkData,
 	ChartAxisProps,
 	ChartBarProps,
 	ChartAreaProps,

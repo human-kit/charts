@@ -135,8 +135,10 @@ tooltip, data table) go next to it, because HTML cannot be in an SVG.
 | `aria-describedby`              | The id of an element that describes the chart, for example a summary of the trend.   |
 | `class`, `element`, `context`   | The same as in `@human-kit/ui`.                                                      |
 
-A mark can replace the `data`, `x`, `y` and `series` of the root with its own
-props. Thus one chart can show a line of sales and a rule at each campaign date.
+A mark can replace the `data` of the root with its own `data`, and then it can
+have its own `x`, `y` and `series`. Thus one chart can show a line of sales and
+a rule at each campaign date. A mark without `data` cannot have its own
+channels (see open question 2).
 
 ### Scales
 
@@ -429,10 +431,16 @@ Steps 1 and 2 are complete (2026-10-09).
    `graphics-symbol` role gives the same result as `img` and less support. A
    `grid` is not necessary, because `application` already gives the arrow keys
    to the chart. JAWS and VoiceOver must confirm the decision.
-2. **The type of the marks.** A child component cannot get the generic type of
-   its parent in Svelte 5. Thus a mark without its own `data` cannot check the
-   field names of the root. The candidates are a typed factory, for example
-   `const Chart = createChart<Sale>()`, and the root-level channels only.
+2. **The type of the marks.** Decided: a mark can have its own channels only
+   when it has its own `data`. A child component cannot get the generic type
+   of its parent in Svelte 5, thus a channel on a mark without `data` cannot be
+   checked. The props of a mark are a union: `data` with the channels, or none
+   of them. A channel without `data` is a type error. The candidates were a
+   typed factory, for example `const Chart = createChart<Sale>()`, and this
+   rule. The factory puts all of the parts in one object, and a bundler then
+   includes all of them in each chart. The rule adds no bytes. To show a second
+   field of the root rows, give the rows to the mark again:
+   `<Chart.Line data={sales} y="cost" />`.
 3. **The order of the series for `ArrowUp` and `ArrowDown`.** Decided: the
    order of the legend. The candidates were the order of the legend, which does
    not change, and the order on the screen at the focused x value, which

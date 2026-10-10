@@ -46,11 +46,20 @@ A row without a valid x or y value has no point, and the line stops there. The l
 
 ## A mark with its own data
 
-A mark can replace the `data`, `x`, `y` and `series` of the root with its own props. Thus one chart can show two sets of rows with different fields, on the same scales. The values of the mark go into the domains of the scales.
+A mark can replace the `data` of the root with its own `data`. Thus one chart can show two sets of rows with different fields, on the same scales. The values of the mark go into the domains of the scales.
 
 <Demo source={ownDataSource}><OwnData /></Demo>
 
-The field names of a mark without its own `data` are not checked against the type of the root data.
+Only a mark with its own `data` can have its own `x`, `y` and `series`. The types check these field names against the rows of the mark. A mark cannot get the row type of the root, thus a channel on a mark without `data` is a type error. To show a second field of the root rows, give the rows to the mark again:
+
+```svelte
+<Chart.Root data={sales} x="month" y="revenue">
+	<Chart.Plot>
+		<Chart.Line />
+		<Chart.Line data={sales} y="cost" />
+	</Chart.Plot>
+</Chart.Root>
+```
 
 ## Keyboard
 
