@@ -18,7 +18,6 @@
 	data={actual}
 	x="week"
 	y="tickets"
-	series={() => 'Closed'}
 	xFormat={(week) => `Week ${week}`}
 	height={240}
 	class="demo-chart"
@@ -28,8 +27,8 @@
 		<Chart.Grid />
 		<Chart.Axis position="bottom" />
 		<Chart.Axis position="left" />
-		<Chart.Line />
-		<Chart.Line data={target} x="week" y="goal" series={() => 'Target'} r={0} />
+		<Chart.Line name="Closed" />
+		<Chart.Line data={target} x="week" y="goal" name="Target" r={0} />
 	</Chart.Plot>
 	<Chart.Legend />
 	<Chart.Tooltip />

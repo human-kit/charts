@@ -59,6 +59,8 @@ A mark can have its categories on the y axis, as horizontal bars do. Then the ve
 
 The name of a point has the category or the x value first, then the name of the series, then the value. For example, "Q2, North, 31". The values use the formats of the chart: `xFormat`, `yFormat` and `locale`.
 
+The name does not include the name of the field. A field name is a name in the code, for example `revenue_usd`. It is not a text for a user. When two marks show two fields of the same rows, give each mark a `name`. The name is the name of the series of the mark, thus a point is "2015, Cost, 40" and not "2015, 40".
+
 A time scale writes a date as precise as the data. Dates that are all on the first of January show as "2025". Dates on the first of a month show as "March 2025".
 
 ## Focus
