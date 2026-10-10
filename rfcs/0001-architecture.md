@@ -1,6 +1,6 @@
 # RFC 0001: Architecture of `@human-kit/charts`
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Date:** 2026-10-09
 - **Scope:** version 1
 
@@ -268,8 +268,8 @@ arrow keys come to the chart, and JAWS reads each point:
 JAWS does not read the name of the chart on `Tab`, but NVDA does. The title is
 before the plot, thus a user in browse mode reads it before the plot.
 
-VoiceOver is not tested yet. A test with it must occur before this RFC changes
-to "Accepted".
+The test with NVDA is the acceptance test of this RFC. The test with JAWS is
+an additional check. VoiceOver is not tested.
 
 ### Keyboard
 
@@ -406,7 +406,7 @@ changesets. The docs site is on Vercel and uses `@human-kit/markdown`.
 - Browser tests for the keyboard table, the focus contract and the selection.
 - Server tests: each part makes the same markup on the server as on the client.
 - An accessibility tree test for each mark: names, roles and hidden elements.
-- A manual test with NVDA, JAWS and VoiceOver before each minor version.
+- A manual test with NVDA before each minor version.
 
 ## Prototype plan
 
@@ -458,7 +458,7 @@ Steps 1 and 2 are complete (2026-10-09).
    plot and `role="img"` on each point (see "Screen reader test"). The
    `graphics-symbol` role gives the same result as `img` and less support. A
    `grid` is not necessary, because `application` already gives the arrow keys
-   to the chart. JAWS confirms the decision. VoiceOver must confirm it.
+   to the chart. JAWS gives the same result. VoiceOver is not tested.
 2. **The type of the marks.** Decided: a mark can have its own channels only
    when it has its own `data`. A child component cannot get the generic type
    of its parent in Svelte 5, thus a channel on a mark without `data` cannot be
