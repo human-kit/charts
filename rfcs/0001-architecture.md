@@ -217,15 +217,39 @@ same information is in the names of the points and in the data table.
 
 - `Chart.Root` makes a `<figure>`. `Chart.Title`, when it is present, is the
   `<figcaption>`.
-- The SVG of `Chart.Plot` has the accessible name of the chart and
-  `aria-roledescription="chart"`.
+- The SVG of `Chart.Plot` has `role="application"`, the accessible name of
+  the chart and `aria-roledescription="chart"`. The `application` role makes a
+  screen reader go into focus mode on a point, thus the arrow keys come to the
+  chart (see "Screen reader test" below).
 - Each series is a group with the name of the series.
 - Each point is an element with an accessible name that has all of its values,
   for example "March, North, revenue 58".
 - The decoration (paths, axes, grid lines) has `aria-hidden="true"`.
 
-The exact roles are an open question (see below). The prototype must test them
-with NVDA, JAWS and VoiceOver before this RFC changes to "Accepted".
+Each point has `role="img"`.
+
+### Screen reader test
+
+The test used NVDA 2026.2 with Chrome on Windows, with real key presses:
+`Tab` into the chart, then `ArrowRight`, `ArrowRight` and `ArrowDown`.
+
+| Plot role     | Point role        | `Tab`                     | Arrow keys                                     |
+| ------------- | ----------------- | ------------------------- | ---------------------------------------------- |
+| `group`       | `img`             | Reads the chart and point | NVDA keeps them: it reads characters and lines |
+| `group`       | `graphics-symbol` | Reads the chart and point | NVDA keeps them: it reads characters and lines |
+| `application` | `img`             | Reads the chart and point | They move the focus; NVDA reads each point     |
+
+With `application`, NVDA reads "Downloads per year, chart, Core, grouping,
+2018, Core, 40, graphic" on `Tab`, then "2019, Core, 46" and "2020, Core, 55".
+`ArrowDown` reads "Icons, grouping, 2020, Icons, 30". With `group`, the user
+must know the NVDA command that changes to focus mode.
+
+The `application` role removes the browse mode in the plot only. The title, the
+legend and the data table stay in browse mode, and the data table gives each
+value in a table that the user can read cell by cell.
+
+JAWS and VoiceOver are not tested yet. A test with them must occur before this
+RFC changes to "Accepted".
 
 ### Keyboard
 
@@ -395,10 +419,11 @@ Steps 1 and 2 are complete (2026-10-09).
 
 ## Open questions
 
-1. **The roles of the points.** The candidates are `role="img"` on each point
-   (the prototype uses it), the `graphics-symbol` role of the WAI-ARIA graphics
-   module, and a `grid` with `row` and `gridcell`. The support for each role in
-   screen readers is different, and the prototype must measure it.
+1. **The roles of the points.** Decided for NVDA: `role="application"` on the
+   plot and `role="img"` on each point (see "Screen reader test"). The
+   `graphics-symbol` role gives the same result as `img` and less support. A
+   `grid` is not necessary, because `application` already gives the arrow keys
+   to the chart. JAWS and VoiceOver must confirm the decision.
 2. **The type of the marks.** A child component cannot get the generic type of
    its parent in Svelte 5. Thus a mark without its own `data` cannot check the
    field names of the root. The candidates are a typed factory, for example
