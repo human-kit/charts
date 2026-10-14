@@ -115,7 +115,7 @@ Give `aria-describedby` with the id of an element that describes the chart, for 
 
 ## Rendering on the server
 
-The root makes the SVG on the server with `width`, or with a width of 640 pixels. After the mount, it measures the container.
+The root makes the SVG on the server with `width`, or with a width of 640 pixels. Without `width`, the SVG fills its container and the browser scales the chart until the first measure. Thus the chart does not make a narrow page wider. After the mount, the root measures the container and draws the chart at the real width. The height does not change.
 
 - The scales on the server come from the `data` and the channels of the root. A chart with only root data has the correct scales in all orders of the parts.
 - A mark with its own data or channels, and a stacked mark, add values when they start. On the server, the parts before them do not see these values. Give the `domain`, or put the mark before the guides.

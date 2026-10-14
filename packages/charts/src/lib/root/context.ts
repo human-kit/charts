@@ -109,6 +109,11 @@ export type ChartContext = {
 	readonly series: Channel<any, string> | undefined;
 	/** The size of the SVG, in pixels. */
 	readonly width: number;
+	/**
+	 * Whether the width is not known yet: there is no `width` prop and no measure. On the server and
+	 * before the first measure, the SVG fills its container and scales the default width.
+	 */
+	readonly fluid: boolean;
 	readonly height: number;
 	readonly margin: ChartMargin;
 	readonly xScale: Scale;
