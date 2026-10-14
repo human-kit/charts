@@ -6,15 +6,16 @@ name: Release
 #                        for review. Merging that branch is what releases.
 #   none pending       → publish to npm, push the tags and create the GitHub Releases.
 #
-# OFF for now: the only trigger is a manual run, and the repo has no NPM_TOKEN
-# secret yet, so the publish step cannot run. To turn releases on, add the secret
-# and the `push: branches: [main]` trigger below.
+# It runs on each push to `main`, and it can also run by hand. The npm token is
+# the NPM_TOKEN secret of the human-kit organization.
 #
 # The job pushes the release branch and links the pull request instead of opening
 # it: opening one needs the "Allow GitHub Actions to create and approve pull
 # requests" switch, which also lets a workflow approve its own pull request.
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -55,13 +56,15 @@ jobs:
           # of each changeset, and it aborts without a token.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pnpm exec changeset version
-
-          if git diff --quiet; then
+          # `changeset version` stops with an error when there is no changeset,
+          # thus look for one first.
+          if ! ls .changeset/*.md > /dev/null 2>&1; then
             echo "versioned=false" >> "$GITHUB_OUTPUT"
             echo "No unreleased changesets: nothing to version."
             exit 0
           fi
+
+          pnpm exec changeset version
 
           echo "versioned=true" >> "$GITHUB_OUTPUT"
           git add -A
