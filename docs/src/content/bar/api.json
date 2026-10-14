@@ -17,21 +17,21 @@
 					"type": "Channel<T, ChartValue>",
 					"required": false,
 					"default": null,
-					"description": "The x channel of this mark. Without it, the mark uses the channel of the root."
+					"description": "The x channel of this mark. It needs `data`. Without it, the mark uses the channel of the root."
 				},
 				{
 					"name": "y",
 					"type": "Channel<T, ChartValue>",
 					"required": false,
 					"default": null,
-					"description": "The y channel of this mark. Without it, the mark uses the channel of the root."
+					"description": "The y channel of this mark. It needs `data`. Without it, the mark uses the channel of the root."
 				},
 				{
 					"name": "series",
 					"type": "Channel<T, string>",
 					"required": false,
 					"default": null,
-					"description": "The series channel of this mark. Without it, the mark uses the channel of the root."
+					"description": "The series channel of this mark. It needs `data`. Without it, the mark uses the channel of the root."
 				},
 				{
 					"name": "class",

@@ -128,15 +128,26 @@ export type ChartPlotProps = Omit<SVGAttributes<SVGSVGElement>, 'class' | 'role'
 	element?: SVGSVGElement | null;
 };
 
-export type ChartLineProps<T> = {
-	/** The rows of this mark. Without it, the mark uses the data of the root. */
-	data?: readonly T[];
-	/** The x channel of this mark. Without it, the mark uses the channel of the root. */
-	x?: Channel<T, ChartValue>;
-	/** The y channel of this mark. Without it, the mark uses the channel of the root. */
-	y?: Channel<T, ChartValue>;
-	/** The series channel of this mark. Without it, the mark uses the channel of the root. */
-	series?: Channel<T, string>;
+/**
+ * The data and the channels of a mark. A mark uses the data and the channels of the root, or it
+ * has its own `data`. Only a mark with its own `data` can have its own channels: a child cannot
+ * get the row type of the root, thus the types can check a field name only against the data of
+ * the same component.
+ */
+export type ChartMarkData<T> =
+	| {
+			/** The rows of this mark. Without it, the mark uses the data of the root. */
+			data: readonly T[];
+			/** The x channel of this mark. It needs `data`. Without it, the mark uses the channel of the root. */
+			x?: Channel<T, ChartValue>;
+			/** The y channel of this mark. It needs `data`. Without it, the mark uses the channel of the root. */
+			y?: Channel<T, ChartValue>;
+			/** The series channel of this mark. It needs `data`. Without it, the mark uses the channel of the root. */
+			series?: Channel<T, string>;
+	  }
+	| { data?: undefined; x?: undefined; y?: undefined; series?: undefined };
+
+export type ChartLineProps<T> = ChartMarkData<T> & {
 	/** The radius of the point of each row, in pixels. The default is 3. */
 	r?: number;
 	/** The CSS class names of the group of the mark. */
@@ -163,7 +174,9 @@ export type ChartGridProps = {
 	class?: string;
 };
 
-export type ChartBarProps<T> = Omit<ChartLineProps<T>, 'r'> & {
+export type ChartBarProps<T> = ChartMarkData<T> & {
+	/** The CSS class names of the group of the mark. */
+	class?: string;
 	/**
 	 * How the bars of two series share a category. `grouped` puts them side by side, and
 	 * `stacked` puts them one on the other. The default is `grouped`.
@@ -173,7 +186,9 @@ export type ChartBarProps<T> = Omit<ChartLineProps<T>, 'r'> & {
 	groupPadding?: number;
 };
 
-export type ChartAreaProps<T> = Omit<ChartLineProps<T>, 'r'> & {
+export type ChartAreaProps<T> = ChartMarkData<T> & {
+	/** The CSS class names of the group of the mark. */
+	class?: string;
 	/** Puts the series one on the other. The default is `false`: each area starts at zero. */
 	stacked?: boolean;
 	/** The radius of the point of each row, in pixels. The default is 0: the points are hidden. */

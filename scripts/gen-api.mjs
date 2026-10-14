@@ -220,6 +220,9 @@ function findType(name) {
 	return undefined;
 }
 
+/** The members of a union of prop sets. They are optional, also without a question token. */
+const optional = new WeakSet();
+
 /** The members that a type declares, with the `Omit` of a local type resolved. */
 function members(typeNode, excluded = new Set()) {
 	if (!typeNode) return [];
@@ -228,6 +231,14 @@ function members(typeNode, excluded = new Set()) {
 	}
 	if (Node.isIntersectionTypeNode(typeNode)) {
 		return typeNode.getTypeNodes().flatMap((node) => members(node, excluded));
+	}
+	// A union of prop sets: the largest set lists all of the props, and each one is optional,
+	// because another set of the union does without it.
+	if (Node.isUnionTypeNode(typeNode)) {
+		const sets = typeNode.getTypeNodes().map((node) => members(node, excluded));
+		const largest = sets.reduce((a, b) => (b.length > a.length ? b : a), []);
+		for (const member of largest) optional.add(member);
+		return largest;
 	}
 	if (Node.isTypeReference(typeNode)) {
 		const name = typeNode.getTypeName().getText();
@@ -299,7 +310,7 @@ function prop(member, defaultValues) {
 	return {
 		name,
 		type: type.replace(/\s+/g, ' '),
-		required: !member.hasQuestionToken(),
+		required: !member.hasQuestionToken() && !optional.has(member),
 		default: defaultValues.get(name) ?? null,
 		description: description.replace(/\r\n/g, '\n')
 	};
