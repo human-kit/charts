@@ -1,6 +1,6 @@
 {
 	"name": "@human-kit/charts",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"description": "Accessible, headless chart components for Svelte 5.",
 	"license": "MIT",
 	"author": "Agustin Delgado <agustindariodelgado@gmail.com>",

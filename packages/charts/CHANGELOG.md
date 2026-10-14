@@ -1,0 +1,33 @@
+# @human-kit/charts
+
+## 0.1.0
+
+### Minor Changes
+
+- [#2](https://github.com/human-kit/charts/pull/2) [`dec8535`](https://github.com/human-kit/charts/commit/dec8535842fed6f76ec9e917b59299b130253a40) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - The first release. It has the parts `Chart.Root`, `Chart.Title`, `Chart.Plot`, `Chart.Line`, `Chart.Area`, `Chart.Bar`, `Chart.Axis`, `Chart.Grid`, `Chart.Legend`, `Chart.Tooltip` and `Chart.DataTable`, and the linear, time and band scales.
+
+- [#5](https://github.com/human-kit/charts/pull/5) [`7e5b9bc`](https://github.com/human-kit/charts/commit/7e5b9bce9bf9a93d11f557d87c15be98cbbed286) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - A row without a valid x or y value now breaks a line or an area. Before, the line connected the points on the two sides of the row. `null` and `undefined` are no longer read as zero, and the field types accept them.
+
+  `ArrowUp` and `ArrowDown` now move through the series in the order of the legend. Two marks with a series of the same name, for example an area and a line, show that series one after the other.
+
+- [#9](https://github.com/human-kit/charts/pull/9) [`327f23b`](https://github.com/human-kit/charts/commit/327f23bbbeebd6fdb6dfca79cd99609fc0e2bd26) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - `Chart.Line`, `Chart.Area` and `Chart.Bar` get a `name` prop. It names the series of a mark without a series channel. The legend, the names of the points and the data table show it. Give each mark a `name` when two marks show two fields of the same rows: a point is then "2015, Cost, 40" and not "2015, 40", and the data table shows the two fields.
+
+- [#11](https://github.com/human-kit/charts/pull/11) [`b39a38e`](https://github.com/human-kit/charts/commit/b39a38efc94a0e6aca50fe16cf2d57dc7cdcf166) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - A stack now shows its series in the order of the legend and of the keyboard. On a vertical stack of bars or areas, the first series is on the top. Before, it was at the bottom, and `ArrowDown` went up on the screen. A horizontal stack does not change: the first series is next to zero, and `ArrowRight` goes to the right.
+
+- [#8](https://github.com/human-kit/charts/pull/8) [`82b5844`](https://github.com/human-kit/charts/commit/82b5844e98fb5e31afd9efbec96d6f3fa81f3dac) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - A mark can have its own `x`, `y` and `series` only when it has its own `data`. Before, the types did not check a channel on a mark without `data`, thus a wrong field name was not an error. Now a channel on a mark without `data` is a type error. To show a second field of the root rows, give the rows to the mark again: `<Chart.Line data={sales} y="cost" />`.
+
+### Patch Changes
+
+- [#4](https://github.com/human-kit/charts/pull/4) [`41ee900`](https://github.com/human-kit/charts/commit/41ee900702f8cc36cb5bd90d6985a44ff8c042f3) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - An axis next to a band scale on y now measures its labels correctly. Before, a chart with horizontal bars and no `margin` did not stop updating after the mount.
+
+- [#7](https://github.com/human-kit/charts/pull/7) [`3806451`](https://github.com/human-kit/charts/commit/3806451b9c666ce58b3a22e4e4b1a709e4435e79) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - The plot now has `role="application"`. A screen reader in browse mode kept the arrow keys for its own reading, thus the keyboard of the chart did not operate. With NVDA, the arrow keys now move the focus through the points, and NVDA reads each point.
+
+- [#10](https://github.com/human-kit/charts/pull/10) [`d35d374`](https://github.com/human-kit/charts/commit/d35d37417d20c96bcb8d201c320dd0d9c84dd03d) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - Without a `width` prop, the SVG of `Chart.Plot` has `width="100%"` until the first measure. Before, the server made an SVG of 640 pixels, and on a narrow screen the page was wider than the screen until the hydration. Now the browser scales the chart to its container, and the height does not change.
+
+- [#6](https://github.com/human-kit/charts/pull/6) [`35a2cd2`](https://github.com/human-kit/charts/commit/35a2cd2a73b3475e254ddd492d3293033a165b10) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - The charts work better on a touch screen and on a narrow screen:
+
+  - A tap opens the tooltip on the nearest point, and it stays when the finger lifts. A tap out of the plot, or a finger that scrolls the page, closes it.
+  - A click or a tap less than 40 pixels from a point selects it.
+  - The tooltip stays in the width of the figure.
+  - An axis measures its labels again when a web font loads. Before, the labels could be cut.
+  - A band axis shows each category while each one has 32 pixels. Before, it used the spacing of a number axis and skipped categories.
