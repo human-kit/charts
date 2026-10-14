@@ -45,6 +45,8 @@ The axis of the categories needs a band scale. Import `scaleBand` from `@human-k
 - `grouped` (the default) puts the bars side by side. `groupPadding` is the space between the bars of a group, as a fraction of a bar.
 - `stacked` puts the bars one on the other. A negative value goes below zero.
 
+A stack shows the series in the order of the legend and of the keyboard. On vertical bars, the first series is on the top, thus `ArrowDown` goes to the bar below. On horizontal bars, the first series is next to zero, thus `ArrowRight` goes to the bar on the right.
+
 A stack changes the domain of the value scale. On the server, a guide before the mark does not see the top of the stack. Thus put the mark before the guides, or give the `domain` of the value scale.
 
 ## Horizontal bars

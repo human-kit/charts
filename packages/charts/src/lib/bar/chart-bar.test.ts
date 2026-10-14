@@ -22,12 +22,21 @@ describe('Chart.Bar', () => {
 
 	it('puts the bars of each category one on the other, and the scale includes the tops', () => {
 		render(BarTest, { layout: 'stacked' });
-		// The largest stack is 30 + 25 = 55.
-		const [x, yTop, width, height] = box(bars()[5]);
+		// The largest stack is 30 + 25 = 55. The first series is on the top, thus `ArrowDown` goes
+		// down on the screen.
+		const [x, yTop, width, height] = box(bars()[2]);
 		expect([x, width]).toEqual([200, 100]);
 		expect(yTop).toBe(0);
-		expect(height).toBe(roundTwo((25 / 55) * 200));
-		expect(box(bars()[2])[1] + box(bars()[2])[3]).toBe(200);
+		expect(height).toBe(roundTwo((30 / 55) * 200));
+		expect(box(bars()[5])[1] + box(bars()[5])[3]).toBe(200);
+	});
+
+	it('moves down on the screen with ArrowDown in a stack', async () => {
+		render(BarTest, { layout: 'stacked' });
+		bars()[2].focus();
+		await userEvent.keyboard('{ArrowDown}');
+		expect(document.activeElement).toBe(bars()[5]);
+		expect(box(bars()[5])[1]).toBeGreaterThan(box(bars()[2])[1]);
 	});
 
 	it('names each bar with the category, the series and the value', () => {

@@ -12,9 +12,9 @@ const texts = (selector: string) =>
 describe('Chart.Area', () => {
 	it('puts the series one on the other, and the scale includes the tops', () => {
 		render(PartsTest);
-		// The largest stack is 30 + 15 = 45, at the top of the plot.
-		expect(points()[5].getAttribute('cy')).toBe('0');
-		expect(points()[2].getAttribute('cy')).toBe(String(Math.round((1 - 30 / 45) * 20000) / 100));
+		// The largest stack is 30 + 15 = 45, at the top of the plot. The first series is on the top.
+		expect(points()[2].getAttribute('cy')).toBe('0');
+		expect(points()[5].getAttribute('cy')).toBe(String(Math.round((1 - 15 / 45) * 20000) / 100));
 	});
 
 	it('hides the points, and shows the point that has the focus', async () => {

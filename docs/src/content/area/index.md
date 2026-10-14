@@ -38,7 +38,7 @@ The mark makes a `<g>` with one group for each series. A series group holds a fi
 
 ## Stacked
 
-Give `stacked` to put the series one on the other. The bottom of each area is the top of the area before it. The y scale then includes the top of the stack.
+Give `stacked` to put the series one on the other. The first series is on the top, and each area is on the area of the next series. Thus the order from the top to the bottom is the order of the legend, and `ArrowDown` goes down on the screen. The y scale includes the top of the stack.
 
 <Demo source={stackedSource}><Stacked /></Demo>
 
