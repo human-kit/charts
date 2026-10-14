@@ -11,7 +11,7 @@
 	} from '../root/context.js';
 	import type { ChartLineProps } from '../types.js';
 
-	let { data, x, y, series, r = 3, class: className = '' }: ChartLineProps<T> = $props();
+	let { data, x, y, series, name, r = 3, class: className = '' }: ChartLineProps<T> = $props();
 
 	const ctx = useChartContext('Chart.Line');
 
@@ -20,7 +20,8 @@
 			(data ?? ctx.data) as readonly T[],
 			(x ?? ctx.x) as Channel<T, ChartValue> | undefined,
 			(y ?? ctx.y) as Channel<T, ChartValue> | undefined,
-			(series ?? ctx.series) as Channel<T, string> | undefined
+			(series ?? ctx.series) as Channel<T, string> | undefined,
+			name
 		)
 	);
 

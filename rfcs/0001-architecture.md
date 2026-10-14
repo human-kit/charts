@@ -199,6 +199,9 @@ days, hours, minutes and seconds). It makes its labels with
 | `Chart.Area` | Makes one filled `<path>` per series. `stacked` puts the series one on the other. The points show only on focus. |
 | `Chart.Bar`  | Makes one `<rect>` per row. `layout` is `grouped` or `stacked`. Categories on y make horizontal bars.            |
 
+A mark without a series channel has one series. Its `name` prop gives that
+series a name for the legend, the names of the points and the data table.
+
 A row without a finite value is a gap in the line. It is not a focus target.
 In the data table, its cell is empty.
 
@@ -451,6 +454,10 @@ Steps 1 and 2 are complete (2026-10-09).
    confirm that the up and down arrows are clear to the user.
 5. **The default width on the server**, and how the chart shows the change
    after the first measure.
-6. **The name of a value.** The prototype names a point "2015, South, 66".
-   A name with the field, for example "2015, South, revenue 66", is longer but
-   clear when a chart has two y channels.
+6. **The name of a value.** Decided: the name does not include the field.
+   A point is "2015, South, 66". A field name is a name in the code, for
+   example `revenue_usd`, and not a text for a user. When two marks show two
+   fields of the same rows, each mark gets a `name`, which is the name of its
+   series: "2015, Cost, 40". The legend and the data table show the same name.
+   Without it, the two series have no name, and the data table shows only the
+   first one.

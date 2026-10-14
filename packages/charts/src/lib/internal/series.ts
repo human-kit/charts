@@ -12,20 +12,22 @@ export function isValue(value: unknown): value is ChartValue {
 
 /**
  * The rows as series of points, in the order of their first appearance. A row without a valid x
- * or y value has no point: it is a gap in a line, and it takes no focus.
+ * or y value has no point: it is a gap in a line, and it takes no focus. Without a series channel,
+ * all of the rows are one series with the name `fallback`.
  */
 export function groupRows<T>(
 	rows: readonly T[],
 	x: Channel<T, ChartValue> | undefined,
 	y: Channel<T, ChartValue> | undefined,
-	series: Channel<T, string> | undefined
+	series: Channel<T, string> | undefined,
+	fallback = ''
 ): ChartSeries<T>[] {
 	const out = new Map<string, ChartSeries<T>>();
 	// The series that have a row without a value after their last point.
 	const open = new Set<string>();
 	if (!x || !y) return [];
 	rows.forEach((datum, index) => {
-		const name = series ? String(read(series, datum, index) ?? '') : '';
+		const name = series ? String(read(series, datum, index) ?? '') : fallback;
 		const [xv, yv] = [read(x, datum, index), read(y, datum, index)];
 		let group = out.get(name);
 		if (!isValue(xv) || !isValue(yv)) {

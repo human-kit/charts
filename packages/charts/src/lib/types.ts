@@ -148,6 +148,12 @@ export type ChartMarkData<T> =
 	| { data?: undefined; x?: undefined; y?: undefined; series?: undefined };
 
 export type ChartLineProps<T> = ChartMarkData<T> & {
+	/**
+	 * The name of the series of this mark, when it has no series channel. The legend, the names of
+	 * the points and the data table show it. Give a name to each mark when two marks show two
+	 * fields, for example the revenue and the cost.
+	 */
+	name?: string;
 	/** The radius of the point of each row, in pixels. The default is 3. */
 	r?: number;
 	/** The CSS class names of the group of the mark. */
@@ -175,6 +181,12 @@ export type ChartGridProps = {
 };
 
 export type ChartBarProps<T> = ChartMarkData<T> & {
+	/**
+	 * The name of the series of this mark, when it has no series channel. The legend, the names of
+	 * the points and the data table show it. Give a name to each mark when two marks show two
+	 * fields, for example the revenue and the cost.
+	 */
+	name?: string;
 	/** The CSS class names of the group of the mark. */
 	class?: string;
 	/**
@@ -187,6 +199,12 @@ export type ChartBarProps<T> = ChartMarkData<T> & {
 };
 
 export type ChartAreaProps<T> = ChartMarkData<T> & {
+	/**
+	 * The name of the series of this mark, when it has no series channel. The legend, the names of
+	 * the points and the data table show it. Give a name to each mark when two marks show two
+	 * fields, for example the revenue and the cost.
+	 */
+	name?: string;
 	/** The CSS class names of the group of the mark. */
 	class?: string;
 	/** Puts the series one on the other. The default is `false`: each area starts at zero. */
