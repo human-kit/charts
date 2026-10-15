@@ -1,5 +1,11 @@
 # @human-kit/charts
 
+## 0.1.1
+
+### Patch Changes
+
+- [#15](https://github.com/human-kit/charts/pull/15) [`1e15dff`](https://github.com/human-kit/charts/commit/1e15dff2c4fc98726f91b5ae301f23ee99b9eb3b) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - The tooltip of a bar opens when the pointer is on any part of the bar. Before, it opened only within 40 pixels of the end of the bar, thus a tall bar showed no tooltip on most of its area.
+
 ## 0.1.0
 
 ### Minor Changes
