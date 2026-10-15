@@ -36,4 +36,5 @@
 		<Chart.Axis position="bottom" />
 		<Chart.Bar {layout} groupPadding={0} />
 	</Chart.Plot>
+	<Chart.Tooltip />
 </Chart.Root>

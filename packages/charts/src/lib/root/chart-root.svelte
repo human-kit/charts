@@ -309,7 +309,8 @@
 
 	/**
 	 * The id of the point nearest to a position on the screen, within 40 pixels. A point can be
-	 * small, thus a pointer or a finger near it is enough.
+	 * small, thus a pointer or a finger near it is enough. A bar is a point with an area: the
+	 * distance goes to its edge, thus all of the bar is under the pointer, not only its end.
 	 */
 	function nearest(clientX: number, clientY: number): string | null {
 		if (!plotElement) return null;
@@ -320,9 +321,11 @@
 		for (const entry of entries) {
 			const mark = marks.get(entry.mark);
 			entry.points.forEach((_, index) => {
-				const anchor = mark?.anchor(entry.series, index);
-				if (!anchor) return;
-				const d = (anchor[0] - px) ** 2 + (anchor[1] - py) ** 2;
+				if (!mark) return;
+				const anchor = mark.distance ? null : mark.anchor(entry.series, index);
+				const d = anchor
+					? (anchor[0] - px) ** 2 + (anchor[1] - py) ** 2
+					: mark.distance!(entry.series, index, px, py);
 				if (d < distance) [best, distance] = [pointId(entry.mark, entry.series, index), d];
 			});
 		}
