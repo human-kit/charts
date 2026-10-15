@@ -6,8 +6,10 @@ name: Release
 #                        for review. Merging that branch is what releases.
 #   none pending       → publish to npm, push the tags and create the GitHub Releases.
 #
-# It runs on each push to `main`, and it can also run by hand. The npm token is
-# the NPM_TOKEN secret of the human-kit organization.
+# It runs on each push to `main`, and it can also run by hand. It publishes through
+# npm trusted publishing: npm trusts this workflow file of this repository, and
+# pnpm changes the OIDC token of the job into a short npm token. There is no npm
+# secret.
 #
 # The job pushes the release branch and links the pull request instead of opening
 # it: opening one needs the "Allow GitHub Actions to create and approve pull
@@ -24,6 +26,9 @@ concurrency:
 
 permissions:
   contents: write
+  # Trusted publishing: the job asks GitHub for an OIDC token, and npm accepts it
+  # for `@human-kit/charts` only.
+  id-token: write
 
 jobs:
   release:
@@ -77,20 +82,12 @@ jobs:
             echo
             echo "[Open the release pull request](${{ github.server_url }}/${{ github.repository }}/compare/main...changeset-release/main?expand=1)"
             echo
-            echo "Merging it, and running this workflow again, publishes to npm."
+            echo "Merging it publishes to npm."
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # `changeset publish` reads its credentials from an `.npmrc`. Nothing else
-      # writes one, and without it npm answers a refused publish with `E404`.
-      # It goes to $HOME so that no later step can commit it.
-      - name: Authenticate with npm
-        if: steps.version.outputs.versioned == 'false'
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > "$HOME/.npmrc"
-
       # `changeset publish` skips the versions that are already on npm, thus a
-      # second run does nothing.
+      # second run does nothing. There is no `.npmrc` with a token, thus a failed
+      # OIDC exchange stops the publish and does not use an old credential.
       - name: Publish
         if: steps.version.outputs.versioned == 'false'
         run: pnpm run release
