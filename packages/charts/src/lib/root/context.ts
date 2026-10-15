@@ -59,6 +59,11 @@ export type ChartMark = {
 	/** The position in pixels where the tooltip of a point points. */
 	anchor: (series: number, index: number) => [number, number];
 	/**
+	 * The squared distance in pixels from a position on the plot to the shape of a point, for a
+	 * mark with points that have an area. Without it, the distance goes to the anchor.
+	 */
+	distance?: (series: number, index: number, x: number, y: number) => number;
+	/**
 	 * Whether the categories of the mark are on the y axis. Then the vertical arrows move in a
 	 * series, and a name and a table row start with the y value.
 	 */

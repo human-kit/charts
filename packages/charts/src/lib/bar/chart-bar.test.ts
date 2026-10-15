@@ -71,6 +71,18 @@ describe('Chart.Bar', () => {
 		expect(document.activeElement).toBe(bars()[5]);
 	});
 
+	it('shows the bar under the pointer, also far from the end of the bar', async () => {
+		render(BarTest);
+		const tooltip = () => document.querySelector<HTMLElement>('[data-tooltip]');
+		const svg = document.querySelector('svg')!;
+		// Q3 North is from x 200 to 250, and from y 0 to 200: its end is 190 pixels away.
+		await userEvent.hover(svg, { position: { x: 225, y: 190 } });
+		expect(tooltip()!.textContent).toMatch(/Q3\s*North\s*30/);
+		// The next bar, Q3 South, starts at x 250.
+		await userEvent.hover(svg, { position: { x: 255, y: 190 } });
+		expect(tooltip()!.textContent).toMatch(/Q3\s*South\s*25/);
+	});
+
 	it('draws a negative value down from zero', () => {
 		render(BarTest, {
 			data: [

@@ -69,6 +69,13 @@
 				? [positive ? box.x + box.width : box.x, box.y + box.height / 2]
 				: [box.x + box.width / 2, positive ? box.y : box.y + box.height];
 		},
+		// The distance to the edge of the bar: 0 in the bar.
+		distance(si, i, px, py) {
+			const box = rect(si, i, groups[si].points[i]);
+			const dx = Math.max(box.x - px, 0, px - box.x - box.width);
+			const dy = Math.max(box.y - py, 0, py - box.y - box.height);
+			return dx * dx + dy * dy;
+		},
 		horizontal: () => horizontal
 	});
 	$effect(() => registration.unregister);
