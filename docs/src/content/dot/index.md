@@ -80,7 +80,7 @@ Two dots at the same position are two points. Each one has its own focus target 
 
 ## Number of dots
 
-Each dot is an element and a focus target. With 2,000 dots, the chart draws in about 0.4 seconds, and a key press moves the focus in about 20 milliseconds. With 5,000 dots, a key press takes about 45 milliseconds. Above 2,000 dots, think about a summary of the data.
+Each dot is an element and a focus target. With 2,000 dots, the chart draws in about 0.5 seconds, and a key press moves the focus in about 7 milliseconds. With 5,000 dots, the chart draws in about 1.3 seconds, and a key press takes about 15 milliseconds. Above 2,000 dots, think about a summary of the data.
 
 ## Styles
 

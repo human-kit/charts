@@ -67,6 +67,20 @@ describe('Chart.Line', () => {
 		expect(document.activeElement).toBe(points()[2]);
 	});
 
+	it('does not make the names again on a focus move', async () => {
+		const xFormat = vi.fn((value: unknown) => String(value));
+		render(LineTest, { xFormat });
+		points()[0].focus();
+		await tick();
+		xFormat.mockClear();
+
+		await userEvent.keyboard('{ArrowRight}');
+		await tick();
+		expect(document.activeElement).toBe(points()[1]);
+		// The names have the x values. A focus move must not format them again for each point.
+		expect(xFormat.mock.calls.length).toBeLessThan(points().length);
+	});
+
 	it('keeps the tab stop on the last focused point', async () => {
 		render(LineTest);
 		points()[0].focus();
