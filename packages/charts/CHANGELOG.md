@@ -1,5 +1,11 @@
 # @human-kit/charts
 
+## 0.2.1
+
+### Patch Changes
+
+- [#23](https://github.com/human-kit/charts/pull/23) [`7fb0a20`](https://github.com/human-kit/charts/commit/7fb0a20699ddc9b79caba4c3912f9e41edbdc7ec) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - A key press no longer makes the names of all of the points again. Only the two points of a focus move update. With 5,000 dots, a key press takes about 15 milliseconds, from about 80.
+
 ## 0.2.0
 
 ### Minor Changes
