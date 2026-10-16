@@ -124,11 +124,13 @@
 		{#if children}
 			{@render children(tip)}
 		{:else}
+			{@const xText = ctx.xLabel ? `${ctx.xLabel} ${tip.xText}` : tip.xText}
+			{@const yText = ctx.yLabel ? `${ctx.yLabel} ${tip.yText}` : tip.yText}
 			<!-- The category or the x value first, then the series and the value. -->
-			<div data-tooltip-key="">{tip.horizontal ? tip.yText : tip.xText}</div>
+			<div data-tooltip-key="">{tip.horizontal ? yText : xText}</div>
 			<div data-tooltip-value="">
 				{#if tip.point.series}<span data-tooltip-series="">{tip.point.series}</span>{/if}
-				{tip.horizontal ? tip.xText : tip.yText}
+				{tip.horizontal ? xText : yText}
 			</div>
 		{/if}
 	</div>

@@ -51,7 +51,7 @@ of the CSS.
 | Group  | Parts                                                          |
 | ------ | -------------------------------------------------------------- |
 | Root   | `Chart.Root`, `Chart.Title`, `Chart.Plot`                      |
-| Marks  | `Chart.Line`, `Chart.Area`, `Chart.Bar`                        |
+| Marks  | `Chart.Line`, `Chart.Area`, `Chart.Bar`, `Chart.Dot`           |
 | Guides | `Chart.Axis`, `Chart.Grid`, `Chart.Legend`                     |
 | Access | `Chart.Tooltip`, `Chart.DataTable`                             |
 | Scales | `scaleLinear`, `scaleTime`, `scaleBand` (one subpath for each) |
