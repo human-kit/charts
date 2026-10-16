@@ -9,10 +9,12 @@ import type {
 	ChartTooltipState,
 	ChartValue
 } from './root/context.js';
+import type { ChartSymbol } from './internal/symbol.js';
 import type { FormatOptions, Scale, ScaleType } from './scales/types.js';
 
 export type {
 	Channel,
+	ChartSymbol,
 	ChartContext,
 	ChartMargin,
 	ChartPoint,
@@ -95,6 +97,14 @@ export type ChartRootProps<T> = {
 	xFormat?: ValueFormat;
 	/** The format of the y values in the accessible names and the ticks. */
 	yFormat?: ValueFormat;
+	/**
+	 * The name of the x channel for a user, for example "Weight (lb)". The name of a point puts it
+	 * before the x value. An x axis without a `label` shows it, and the data table uses it as a
+	 * column header. Give it when the x values are measures and not positions, as on a scatter plot.
+	 */
+	xLabel?: string;
+	/** The name of the y channel for a user, for example "Fuel economy (mpg)". See `xLabel`. */
+	yLabel?: string;
 	/** The accessible name of the chart, for when there is no `Chart.Title`. */
 	'aria-label'?: string;
 	/** The id of the element that gives the chart its name. */
@@ -160,6 +170,27 @@ export type ChartLineProps<T> = ChartMarkData<T> & {
 	class?: string;
 };
 
+export type ChartDotProps<T> = ChartMarkData<T> & {
+	/**
+	 * The name of the series of this mark, when it has no series channel. The legend, the names of
+	 * the points and the data table show it.
+	 */
+	name?: string;
+	/**
+	 * The radius of a circle, in pixels. The other shapes have the same area as that circle. The
+	 * default is 4.
+	 */
+	r?: number;
+	/**
+	 * The shape of the dots. `auto` gives each series the next shape of `circle`, `square`,
+	 * `triangle`, `diamond`, `cross` and `triangle-down`, thus color does not identify a series
+	 * alone. A shape name gives all of the series that shape. The default is `auto`.
+	 */
+	symbol?: 'auto' | ChartSymbol;
+	/** The CSS class names of the group of the mark. */
+	class?: string;
+};
+
 export type ChartAxisProps = {
 	/** The side of the plot. The default is `bottom`. `top` and `bottom` show the x scale. */
 	position?: 'top' | 'right' | 'bottom' | 'left';
@@ -217,10 +248,11 @@ export type ChartAreaProps<T> = ChartMarkData<T> & {
 
 export type ChartLegendProps = Omit<HTMLAttributes<HTMLUListElement>, 'class' | 'children'> & {
 	/**
-	 * The content of an item. It receives the name and the index of the series. Without it, an
-	 * item shows an empty `data-swatch` element and the name.
+	 * The content of an item. It receives the name and the index of the series, and the shape of its
+	 * dots when a dot mark shows the series. Without it, an item shows a `data-swatch` element and
+	 * the name. For a series with a shape, the swatch holds an SVG of the shape.
 	 */
-	children?: Snippet<[{ name: string; index: number }]>;
+	children?: Snippet<[{ name: string; index: number; symbol: ChartSymbol | undefined }]>;
 	/** The CSS class names of the list. */
 	class?: string;
 };
@@ -234,8 +266,9 @@ export type ChartDataTableProps = Omit<HTMLAttributes<HTMLTableElement>, 'class'
 	/** The caption of the table. Without it, the `Chart.Title` names the table. */
 	caption?: string;
 	/**
-	 * The header of the first column: the column of the categories, or of the x values. The default
-	 * is the name of the field.
+	 * The header of the first column. It is the column of the categories or of the x values. In a
+	 * table with a row per point, it is the column of the series. The default is the label or the
+	 * name of the field.
 	 */
 	rowHeader?: string;
 	/** The CSS class names of the table. */

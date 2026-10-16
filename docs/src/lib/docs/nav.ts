@@ -28,7 +28,8 @@ export const nav: NavGroup[] = [
 		items: [
 			{ slug: 'line', title: 'Line' },
 			{ slug: 'area', title: 'Area' },
-			{ slug: 'bar', title: 'Bar' }
+			{ slug: 'bar', title: 'Bar' },
+			{ slug: 'dot', title: 'Dot' }
 		]
 	},
 	{

@@ -33,7 +33,7 @@ Both parts go in `Chart.Plot`. Put the grid before the marks, so that the marks 
 
 `position` sets the side of the plot: `top`, `right`, `bottom` or `left`. The default is `bottom`. An axis on the top or the bottom shows the x scale. An axis on the left or the right shows the y scale. You can show one scale on two sides.
 
-`label` is the text of the axis, for example the name and the unit of the values. `tickSize` is the length of a tick line, and `tickPadding` is the distance between a tick line and its label.
+`label` is the text of the axis, for example the name and the unit of the values. Without it, the axis shows the `xLabel` or the `yLabel` of `Chart.Root`. `tickSize` is the length of a tick line, and `tickPadding` is the distance between a tick line and its label.
 
 The root makes about one tick for each 80 pixels of a horizontal axis, and one tick for each 40 pixels of a vertical axis. A band scale has a tick for each category. When there is not sufficient space, it shows one category in two, or one in three.
 
@@ -51,7 +51,7 @@ Give `margin` on `Chart.Root` when the chart must not move after the mount.
 
 The axes and the grid lines have `aria-hidden="true"`. A screen reader does not read them. The names of the points and the data table give the values, with the same formats as the tick labels.
 
-A screen reader does not read the `label` of an axis. When the unit is important, put it in the title, in the format of the values, or in the description of the chart.
+A screen reader does not read the `label` of an axis. When the unit is important, give `xLabel` and `yLabel` to `Chart.Root`: the names of the points include them, and the axes show them. You can also put the unit in the title, in the format of the values, or in the description of the chart.
 
 ## Styles
 

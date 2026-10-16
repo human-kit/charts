@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ChartBarProps, ChartLineProps } from './types.js';
+import type { ChartBarProps, ChartDotProps, ChartLineProps } from './types.js';
 
 // The checks are in the types: `pnpm check` fails when an `@ts-expect-error` has no error.
 type Sale = { month: number; revenue: number; cost: number };
@@ -24,5 +24,12 @@ describe('mark channels', () => {
 		// @ts-expect-error the same rule for bars
 		const bar: ChartBarProps<Sale> = { series: 'cost', layout: 'stacked' };
 		expect([line.y, bar.series]).toEqual(['cost', 'cost']);
+	});
+
+	it('checks the channels and the shape of a dot mark', () => {
+		const dot: ChartDotProps<Sale> = { data: sales, x: 'cost', y: 'revenue', symbol: 'cross' };
+		// @ts-expect-error the shape is not one of the shapes
+		const wrong: ChartDotProps<Sale> = { symbol: 'star' };
+		expect([dot.symbol, wrong.symbol]).toEqual(['cross', 'star']);
 	});
 });

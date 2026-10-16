@@ -21,6 +21,7 @@
 		line: 'line',
 		area: 'area',
 		bar: 'bar',
+		dot: 'dot',
 		'axis-and-grid': 'axis',
 		legend: 'legend',
 		tooltip: 'tooltip',

@@ -5,7 +5,7 @@
 
 	let {
 		position = 'bottom',
-		label,
+		label: labelProp,
 		tickSize = 6,
 		tickPadding = 3,
 		class: className = ''
@@ -17,6 +17,8 @@
 	// The direction of the ticks: away from the plot.
 	const sign = $derived(position === 'bottom' || position === 'right' ? 1 : -1);
 	const ticks = $derived(horizontal ? ctx.xTicks : ctx.yTicks);
+	// Without a label of its own, the axis shows the label of its channel.
+	const label = $derived(labelProp ?? (horizontal ? ctx.xLabel : ctx.yLabel));
 	const range = $derived(horizontal ? ctx.xScale.range : ctx.yScale.range);
 	const offset = $derived(
 		position === 'bottom'

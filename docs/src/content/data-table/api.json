@@ -25,7 +25,7 @@
 					"type": "string",
 					"required": false,
 					"default": null,
-					"description": "The header of the first column: the column of the categories, or of the x values. The default\nis the name of the field."
+					"description": "The header of the first column. It is the column of the categories or of the x values. In a\ntable with a row per point, it is the column of the series. The default is the label or the\nname of the field."
 				},
 				{
 					"name": "class",

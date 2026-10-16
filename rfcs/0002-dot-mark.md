@@ -96,7 +96,7 @@ color.
 ### Shapes
 
 With `symbol="auto"`, the series get the shapes in this order: `circle`,
-`square`, `triangle`, `diamond`, `cross` and `wye`. After six series, the
+`square`, `triangle`, `diamond`, `cross` and `triangle-down`. After six series, the
 order starts again. The shapes have the same area, thus no series looks
 larger than the others.
 
@@ -195,7 +195,7 @@ this loss for the dot mark.
 | `Chart.Axis`      | Shows the label of its channel when it has no `label` prop.               |
 | `Chart.Legend`    | Shows the shape of a series that has one.                                 |
 | `Chart.DataTable` | The `list` layout. The column headers use the labels.                     |
-| `ChartMark`       | Optional `symbol(series)` and `table: 'pivot' \| 'list'`.                 |
+| `ChartMark`       | Optional `list` and `symbol(series)`.                                     |
 | Navigation        | The y value breaks a tie of the x distance for `ArrowUp` and `ArrowDown`. |
 
 ## Size
@@ -230,6 +230,42 @@ A new fixture, "a scatter plot with two axes, a grid and a legend", goes into
 6. Measure the time to draw and to move the focus with 500, 2,000 and 5,000
    dots. Write the limit in the documentation.
 7. The NVDA test.
+
+## Prototype results
+
+Steps 1 to 6 are complete (2026-10-15).
+
+- `Chart.Dot`, the labels, the `list` table and the six shapes are in
+  `packages/charts`. A mark sets `list: true` to get the `list` table and the
+  names that start with the series. Its `symbol(series)` gives the legend the
+  name of the shape and its path, thus a legend without dots does not include
+  the code of the shapes.
+- The sixth shape is `triangle-down` and not `wye`. It needs no new code: it
+  is the triangle upside down.
+- Sizes from `pnpm size`, gzip, without the Svelte runtime:
+
+  | Chart                                                     | Before   | After    |
+  | --------------------------------------------------------- | -------- | -------- |
+  | A line with the keyboard operation                        | 5.44 kB  | 5.54 kB  |
+  | Stacked bars on a band scale, axes and grid               | 7.34 kB  | 7.45 kB  |
+  | A line on a time scale, two axes and a grid               | 7.62 kB  | 7.73 kB  |
+  | Stacked areas, axes, grid, legend, tooltip and data table | 10.20 kB | 10.62 kB |
+  | A scatter plot with two axes, a grid and a legend         | —        | 7.59 kB  |
+
+  Each change to an existing part is smaller than 0.2 kB: the root and the
+  axis add 0.10 kB, the legend 0.14 kB, the data table 0.13 kB and the
+  tooltip 0.03 kB. A chart with all of them adds 0.42 kB.
+
+- Time in Chrome, on the test computer:
+
+  | Dots  | Draw   | One key press | One pointer move |
+  | ----- | ------ | ------------- | ---------------- |
+  | 500   | 184 ms | 6 ms          | 0.4 ms           |
+  | 2,000 | 384 ms | 20 ms         | 0.9 ms           |
+  | 5,000 | 904 ms | 44 ms         | 1.8 ms           |
+
+  A key press updates the attributes of each dot, because each dot reads the
+  focus state. The documentation gives 2,000 dots as the limit.
 
 ## Open questions
 

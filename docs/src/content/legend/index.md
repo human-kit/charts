@@ -35,7 +35,11 @@ A chart with one series that has no name has no legend. The legend then makes no
 
 ## Content of your own
 
-Give `children` to replace the content of an item. The snippet receives the name and the index of the series.
+Give `children` to replace the content of an item. The snippet receives the name and the index of the series, and the shape of its dots when a dot mark shows the series.
+
+## Shapes
+
+A dot mark gives each series a shape. Then the item of that series gets the `data-symbol` attribute, and its swatch holds a small SVG of the shape. The SVG draws with `currentColor`. Thus the legend shows the same shape and the same color as the dots.
 
 <Demo source={customSource}><Custom /></Demo>
 
@@ -67,6 +71,7 @@ Each item has the `data-series` attribute of its series, the same as the series 
 | List                     | `data-legend`      | Empty.                  |
 | Item                     | `data-legend-item` | Empty.                  |
 | Item                     | `data-series`      | The name of the series. |
+| Item                     | `data-symbol`      | The name of the shape.  |
 | Swatch, without children | `data-swatch`      | Empty.                  |
 
 ## API reference

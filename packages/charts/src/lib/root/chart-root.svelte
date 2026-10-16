@@ -40,6 +40,8 @@
 		locale,
 		xFormat,
 		yFormat,
+		xLabel,
+		yLabel,
 		'aria-label': ariaLabel,
 		'aria-labelledby': ariaLabelledBy,
 		'aria-describedby': ariaDescribedBy,
@@ -259,16 +261,19 @@
 	const xTicks = $derived(makeTicks(xScale, xCount, xFormat, xValueFormat));
 	const yTicks = $derived(makeTicks(yScale, yCount, yFormat, yValueFormat));
 
+	/** A value as text, after the label of its channel when there is one. */
+	const labelled = (label: string | undefined, text: string) => (label ? `${label} ${text}` : text);
+
 	/**
 	 * The accessible name of a point: the category or the x value first, then the series and the
-	 * value.
+	 * value. On a mark of single points, the series comes first, and then the two values.
 	 */
-	function pointLabel(point: ChartPoint, horizontal: boolean) {
-		const xText = xValueFormat(toX(point.x));
-		const yText = yValueFormat(toY(point.y));
-		const parts = horizontal ? [yText] : [xText];
-		if (point.series) parts.push(point.series);
-		parts.push(horizontal ? xText : yText);
+	function pointLabel(point: ChartPoint, mark: ChartMark | undefined) {
+		const xText = labelled(xLabel, xValueFormat(toX(point.x)));
+		const yText = labelled(yLabel, yValueFormat(toY(point.y)));
+		const horizontal = mark?.horizontal?.() ?? false;
+		const parts = [horizontal ? yText : xText, horizontal ? xText : yText];
+		if (point.series) parts.splice(mark?.list ? 0 : 1, 0, point.series);
 		return parts.join(', ');
 	}
 
@@ -368,7 +373,9 @@
 			const position = positions.get(id)!;
 			const horizontal = entries[position.series].horizontal;
 			const next = move(
-				entries.map((e) => e.points.map((p) => (e.horizontal ? toY(p.y) : toX(p.x)))),
+				entries.map((e) =>
+					e.points.map((p) => (e.horizontal ? [toY(p.y), toX(p.x)] : [toX(p.x), toY(p.y)]))
+				),
 				position,
 				horizontal ? (TURN[event.key] ?? event.key) : event.key
 			);
@@ -466,6 +473,12 @@
 		set titleId(value) {
 			titleId = value;
 		},
+		get xLabel() {
+			return xLabel;
+		},
+		get yLabel() {
+			return yLabel;
+		},
 		toX,
 		toY,
 		register(mark) {
@@ -503,7 +516,7 @@
 				id,
 				role: 'img',
 				tabindex: id === tabStopId ? 0 : -1,
-				'aria-label': pointLabel(point, marks.get(mark)?.horizontal?.() ?? false),
+				'aria-label': pointLabel(point, marks.get(mark)),
 				'aria-current': current,
 				'data-focused': id === focusedId ? 'true' : undefined,
 				'data-focus-visible': id === focusedId && focusVisible ? 'true' : undefined,

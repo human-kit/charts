@@ -1,5 +1,6 @@
 import { getContext, setContext } from 'svelte';
 import type { Channel } from '../internal/channel.js';
+import type { ChartSymbol } from '../internal/symbol.js';
 import type { Scale } from '../scales/types.js';
 
 /** A value of a channel: a number, a date, or a category of a band scale. */
@@ -68,6 +69,16 @@ export type ChartMark = {
 	 * series, and a name and a table row start with the y value.
 	 */
 	horizontal?: () => boolean;
+	/**
+	 * Whether the mark shows each point on its own, as the dot mark does. Then a name starts with the
+	 * series, and the data table has one row per point.
+	 */
+	list?: boolean;
+	/**
+	 * The shape of the dots of a series, for the legend: its name, and the `d` attribute of a path
+	 * with its center at 0,0 that fits in 12 pixels.
+	 */
+	symbol?: (series: number) => { name: ChartSymbol; d: string };
 };
 
 /** One series of a mark with points, in the order of the keyboard. */
@@ -112,6 +123,10 @@ export type ChartContext = {
 	readonly x: Channel<any, ChartValue> | undefined;
 	readonly y: Channel<any, ChartValue> | undefined;
 	readonly series: Channel<any, string> | undefined;
+	/** The name of the x channel for a user, for example "Weight (lb)", or `undefined`. */
+	readonly xLabel: string | undefined;
+	/** The name of the y channel for a user, or `undefined`. */
+	readonly yLabel: string | undefined;
 	/** The size of the SVG, in pixels. */
 	readonly width: number;
 	/**

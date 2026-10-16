@@ -27,7 +27,7 @@ const sources = ['types.ts', 'root/context.ts', 'scales/types.ts'].map((file) =>
 
 /** The attributes that each point of a mark gets from the root. */
 const POINT = [
-	['data-point', 'On each point: a circle, or a rect for a bar.'],
+	['data-point', 'On each point: a circle, a rect for a bar, or a path for a dot.'],
 	['data-focused', 'On the point that has the focus.'],
 	['data-focus-visible', 'On the focused point, when the focus came from the keyboard.'],
 	['data-selected', 'On the selected point. The point also has `aria-current="true"`.']
@@ -122,6 +122,20 @@ const PAGES = {
 			]
 		}
 	],
+	dot: [
+		{
+			name: 'Dot',
+			type: 'ChartDotProps',
+			file: 'dot/chart-dot.svelte',
+			description: 'A dot mark. It makes one `<path>` per row, in the shape of its series.',
+			dataAttributes: [
+				['data-mark', 'On the group of the mark. The value is `dot`.'],
+				['data-series', 'On the group of each series. The value is the name of the series.'],
+				['data-symbol', 'On the group of each series. The value is the name of the shape.'],
+				...POINT
+			]
+		}
+	],
 	'axis-and-grid': [
 		{
 			name: 'Axis',
@@ -154,7 +168,14 @@ const PAGES = {
 				['data-legend', 'On the list.'],
 				['data-legend-item', 'On each item.'],
 				['data-series', 'On each item. The value is the name of the series.'],
-				['data-swatch', 'On the empty element at the start of an item without children.']
+				[
+					'data-symbol',
+					'On each item of a series with a shape. The value is the name of the shape.'
+				],
+				[
+					'data-swatch',
+					'On the element at the start of an item without children. It holds an SVG of the shape of a series with a shape.'
+				]
 			]
 		}
 	],

@@ -4,25 +4,34 @@ export type Position = { series: number; index: number };
 /** The number of points that `PageUp` and `PageDown` move. */
 export const PAGE = 10;
 
-/** The x value closest to `x` in `values`. Returns its index, or -1 for an empty list. */
-function nearest(values: readonly number[], x: number): number {
+/** The position of a point: its value along the series, and its value across the series. */
+export type Place = readonly [number, number];
+
+/**
+ * The point in `places` with the value along the series closest to `from`. When two have the
+ * same distance, the value across the series breaks the tie. Returns its index, or -1 for an
+ * empty list.
+ */
+function nearest(places: readonly Place[], from: Place): number {
 	let best = -1;
 	let distance = Infinity;
-	for (let i = 0; i < values.length; i++) {
-		const d = Math.abs(values[i] - x);
-		if (d < distance) [best, distance] = [i, d];
-	}
+	let across = Infinity;
+	places.forEach(([x, y], i) => {
+		const d = Math.abs(x - from[0]);
+		const a = Math.abs(y - from[1]);
+		if (d < distance || (d === distance && a < across)) [best, distance, across] = [i, d, a];
+	});
 	return best;
 }
 
 /**
  * The position after a key press, or `null` when the key does not move the focus. `series`
- * holds the x values of the points of each series, in the order of the keyboard.
+ * holds the places of the points of each series, in the order of the keyboard.
  *
  * The keys do not wrap: at the end of a series, `ArrowRight` does nothing.
  */
 export function move(
-	series: ReadonlyArray<readonly number[]>,
+	series: ReadonlyArray<readonly Place[]>,
 	from: Position,
 	key: string
 ): Position | null {

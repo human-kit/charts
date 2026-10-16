@@ -70,7 +70,7 @@
 				},
 				{
 					"name": "data-point",
-					"description": "On each point: a circle, or a rect for a bar."
+					"description": "On each point: a circle, a rect for a bar, or a path for a dot."
 				},
 				{
 					"name": "data-focused",
