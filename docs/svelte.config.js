@@ -4,6 +4,7 @@ import { humandocsMarkdown } from '@human-kit/markdown';
 import { highlight } from '@human-kit/markdown/shiki';
 import rehypeSlug from 'rehype-slug';
 import { rehypeCodeCopy } from './src/lib/docs/markdown/rehype-code-copy.js';
+import { rehypeTableScroll } from './src/lib/docs/markdown/rehype-table-scroll.js';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -11,7 +12,7 @@ const config = {
 	preprocess: [
 		vitePreprocess(),
 		humandocsMarkdown({
-			rehypePlugins: [rehypeSlug, rehypeCodeCopy],
+			rehypePlugins: [rehypeSlug, rehypeCodeCopy, rehypeTableScroll],
 			highlight
 		})
 	],
