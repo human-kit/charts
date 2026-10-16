@@ -1,6 +1,6 @@
 # RFC 0002: The dot mark (scatter plots)
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Date:** 2026-10-15
 - **Scope:** version 0.2
 - **Depends on:** [RFC 0001](0001-architecture.md)
@@ -233,24 +233,24 @@ A new fixture, "a scatter plot with two axes, a grid and a legend", goes into
 
 ## Open questions
 
-1. **The name of the part.** Proposed: `Chart.Dot`. The marks have the name of
+1. **The name of the part.** Decided: `Chart.Dot`. The marks have the name of
    their shape: line, area, bar. `Chart.Point` is a candidate, but "point"
    already means a focus target in RFC 0001 and in `ChartPoint`.
    `Chart.Scatter` is the name of a chart type, and a chart is a composition
    of marks.
-2. **The model of the arrow keys.** Proposed: the model of RFC 0001, with the
+2. **The model of the arrow keys.** Decided: the model of RFC 0001, with the
    dots in the order of x. The candidate is a spatial model: an arrow moves to
    the nearest dot on the screen in its direction. The spatial model can skip
    dots, and a user who cannot see the chart cannot predict it.
-3. **Shapes by default.** Proposed: `symbol="auto"`, thus a chart with two
+3. **Shapes by default.** Decided: `symbol="auto"`, thus a chart with two
    series has two shapes without a choice by the developer. The candidate is
    circles by default and shapes on request, which is smaller. A chart that
    identifies a series only by color does not obey RFC 0001.
-4. **The place of the labels.** Proposed: `xLabel` and `yLabel` on the root.
+4. **The place of the labels.** Decided: `xLabel` and `yLabel` on the root.
    The candidate is the `label` of `Chart.Axis`. A chart can have no axis, two
    axes for one channel, or an axis after the mark, and the server makes the
    names before it sees that axis.
-5. **The order of a name.** Proposed: the series first, then x, then y:
+5. **The order of a name.** Decided: the series first, then x, then y:
    "Europe, Weight (lb) 2,130, Fuel economy (mpg) 31". A line keeps "2015,
    South, 66", because its x value is a category or a date that tells the
    position. On a dot, the series tells the group, and the two values are
