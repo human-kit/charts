@@ -481,12 +481,18 @@
 	}
 
 	/*
-	 * On a narrow screen, a long code value (a subpath, an attribute) must not push the
-	 * table past the page: the cells break it and the table stays in the column. Less
-	 * padding gives the text more room.
+	 * On a narrow screen, a table can be wider than the column. The cells keep their words
+	 * and their code values whole, and the wrapper (from markdown/rehype-table-scroll.js)
+	 * scrolls. A header and a code value never break; the prose of a cell wraps between
+	 * words. Less padding gives the text more room.
 	 */
-	.hd-prose :is(th, td) {
-		overflow-wrap: anywhere;
+	.hd-prose .table-scroll {
+		overflow-x: auto;
+	}
+
+	.hd-prose th,
+	.hd-prose td code {
+		white-space: nowrap;
 	}
 
 	@media (max-width: 40rem) {
