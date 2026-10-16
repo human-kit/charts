@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Chart from '../index.parts.js';
-	import type { ChartPoint } from '../root/context.js';
+	import type { ChartPoint, ChartValue } from '../root/context.js';
 
 	type Row = { x: number; y: number | null; s: string };
 
@@ -12,14 +12,30 @@
 			{ x: 1, y: 5, s: 'B' },
 			{ x: 3, y: 8, s: 'B' }
 		],
-		onSelect
-	}: { data?: Row[]; onSelect?: (point: ChartPoint<Row>) => void } = $props();
+		onSelect,
+		xFormat
+	}: {
+		data?: Row[];
+		onSelect?: (point: ChartPoint<Row>) => void;
+		xFormat?: (value: ChartValue) => string;
+	} = $props();
 
 	let focused: ChartPoint<Row> | null = $state(null);
 </script>
 
 <button data-testid="before">Before</button>
-<Chart.Root id="t" {data} x="x" y="y" series="s" width={400} height={200} bind:focused {onSelect}>
+<Chart.Root
+	id="t"
+	{data}
+	x="x"
+	y="y"
+	series="s"
+	width={400}
+	height={200}
+	bind:focused
+	{onSelect}
+	{xFormat}
+>
 	<Chart.Title>Test chart</Chart.Title>
 	<Chart.Plot data-testid="plot">
 		<Chart.Line />

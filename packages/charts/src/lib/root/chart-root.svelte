@@ -101,6 +101,16 @@
 		return `chart-${instanceId}-${mark}-${series}-${index}`;
 	}
 
+	// The place of each point for the keyboard: its value along the series, then across it. It
+	// changes only with the data, thus a key press does not make it again.
+	const places = $derived(
+		entries.map((e) =>
+			e.points.map((p) =>
+				e.horizontal ? ([toY(p.y), toX(p.x)] as const) : ([toX(p.x), toY(p.y)] as const)
+			)
+		)
+	);
+
 	// The id of each point to its place in `entries`.
 	const positions = $derived.by(() => {
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a lookup made in one pass, not state.
@@ -372,13 +382,7 @@
 			}
 			const position = positions.get(id)!;
 			const horizontal = entries[position.series].horizontal;
-			const next = move(
-				entries.map((e) =>
-					e.points.map((p) => (e.horizontal ? [toY(p.y), toX(p.x)] : [toX(p.x), toY(p.y)]))
-				),
-				position,
-				horizontal ? (TURN[event.key] ?? event.key) : event.key
-			);
+			const next = move(places, position, horizontal ? (TURN[event.key] ?? event.key) : event.key);
 			if (!next) return;
 			event.preventDefault();
 			const entry = entries[next.series];
@@ -511,16 +515,34 @@
 		},
 		point(mark, s, index, point) {
 			const id = pointId(mark, s, index);
-			const current = isSelected(point) ? 'true' : undefined;
+			// Each value is a derived of its own. A move of the focus changes the state of the root,
+			// and each point compares it again, but only the two points whose values change update
+			// their element. The name, with its number formats, is not made again.
+			const label = $derived(pointLabel(point, marks.get(mark)));
+			const tabindex = $derived(id === tabStopId ? 0 : -1);
+			const focus = $derived(id === focusedId ? (focusVisible ? 2 : 1) : 0);
+			const current = $derived(isSelected(point) ? 'true' : undefined);
 			return {
 				id,
 				role: 'img',
-				tabindex: id === tabStopId ? 0 : -1,
-				'aria-label': pointLabel(point, marks.get(mark)),
-				'aria-current': current,
-				'data-focused': id === focusedId ? 'true' : undefined,
-				'data-focus-visible': id === focusedId && focusVisible ? 'true' : undefined,
-				'data-selected': current
+				get tabindex() {
+					return tabindex;
+				},
+				get 'aria-label'() {
+					return label;
+				},
+				get 'aria-current'() {
+					return current;
+				},
+				get 'data-focused'() {
+					return focus ? 'true' : undefined;
+				},
+				get 'data-focus-visible'() {
+					return focus > 1 ? 'true' : undefined;
+				},
+				get 'data-selected'() {
+					return current;
+				}
 			};
 		},
 		get labels() {
