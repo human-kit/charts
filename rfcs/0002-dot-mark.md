@@ -233,7 +233,7 @@ A new fixture, "a scatter plot with two axes, a grid and a legend", goes into
 
 ## Prototype results
 
-Steps 1 to 6 are complete (2026-10-15).
+All of the steps are complete (2026-10-16).
 
 - `Chart.Dot`, the labels, the `list` table and the six shapes are in
   `packages/charts`. A mark sets `list: true` to get the `list` table and the
@@ -266,6 +266,27 @@ Steps 1 to 6 are complete (2026-10-15).
 
   A key press updates the attributes of each dot, because each dot reads the
   focus state. The documentation gives 2,000 dots as the limit.
+
+### Screen reader test
+
+The test used NVDA 2026.2 with Chrome on Windows, with real key presses on
+the demo of the docs page: `Tab` into the chart, then `ArrowRight`,
+`ArrowRight`, `ArrowDown`, `ArrowUp`, `End`, `ArrowDown` and `Enter`. Each
+key moved the focus to the expected dot, and NVDA read:
+
+| Key          | NVDA reads                                                                                                            |
+| ------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `Tab`        | "Weight and fuel economy of cars, chart, Europe, grouping, Europe, Weight (lb) 2,050, Fuel economy (mpg) 36, graphic" |
+| `ArrowRight` | "Europe, Weight (lb) 2,130, Fuel economy (mpg) 31, graphic"                                                           |
+| `ArrowRight` | "Europe, Weight (lb) 2,234, Fuel economy (mpg) 30, graphic"                                                           |
+| `ArrowDown`  | "Japan, grouping, Japan, Weight (lb) 2,290, Fuel economy (mpg) 32, graphic"                                           |
+| `ArrowUp`    | "Europe, grouping, Europe, Weight (lb) 2,234, Fuel economy (mpg) 30, graphic"                                         |
+| `End`        | "Europe, Weight (lb) 3,190, Fuel economy (mpg) 22, graphic"                                                           |
+| `ArrowDown`  | "Japan, grouping, Japan, Weight (lb) 2,720, Fuel economy (mpg) 25, graphic"                                           |
+| `Enter`      | "current"                                                                                                             |
+
+In browse mode, NVDA reads the data table as "table with 26 rows and 3
+columns", with the headers "origin", "Weight (lb)" and "Fuel economy (mpg)".
 
 ## Open questions
 
