@@ -1,5 +1,17 @@
 # @human-kit/charts
 
+## 0.3.0
+
+### Minor Changes
+
+- [#24](https://github.com/human-kit/charts/pull/24) [`c336b94`](https://github.com/human-kit/charts/commit/c336b9486d47258ee5266dd1cdf73673e58b2f0d) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - Add `labels` and `radius` to `Chart.Bar`. `labels` writes the value of each bar after its end, and the chart makes space for the labels. `radius` rounds the corners at the end of each bar, and keeps the corners at zero square.
+
+  A band axis now names each category that has room for one line of text. Before, a vertical band axis named only one category in each 32 pixels, thus a short horizontal bar chart showed only every second name.
+
+### Patch Changes
+
+- [#23](https://github.com/human-kit/charts/pull/23) [`7fb0a20`](https://github.com/human-kit/charts/commit/7fb0a20699ddc9b79caba4c3912f9e41edbdc7ec) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - A key press no longer makes the names of all of the points again. Only the two points of a focus move update. With 5,000 dots, a key press takes about 15 milliseconds, from about 80.
+
 ## 0.2.0
 
 ### Minor Changes
