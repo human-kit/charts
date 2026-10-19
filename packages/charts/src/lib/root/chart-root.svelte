@@ -256,20 +256,22 @@
 	function makeTicks(
 		scale: Scale,
 		count: number,
+		bandSpacing: number,
 		format: ValueFormat | undefined,
 		full: (value: number) => string
 	): ChartTick[] {
 		// A format from the consumer is also the format of the ticks.
 		const label = format ? full : scale.tickFormat(count, locale);
-		// A category is a name, not a step on a line: show each one while they have 32 pixels.
-		if (scale.kind === 'band') count = tickCount(scale.range, 32);
+		// A category is a name, not a step on a line: show each one while it has room. Across a
+		// vertical axis a name needs one line of text; along a horizontal one it needs its width.
+		if (scale.kind === 'band') count = tickCount(scale.range, bandSpacing);
 		return scale
 			.ticks(count)
 			.map((value) => ({ value, position: scale(value), label: label(value) }));
 	}
 
-	const xTicks = $derived(makeTicks(xScale, xCount, xFormat, xValueFormat));
-	const yTicks = $derived(makeTicks(yScale, yCount, yFormat, yValueFormat));
+	const xTicks = $derived(makeTicks(xScale, xCount, 32, xFormat, xValueFormat));
+	const yTicks = $derived(makeTicks(yScale, yCount, 16, yFormat, yValueFormat));
 
 	/** A value as text, after the label of its channel when there is one. */
 	const labelled = (label: string | undefined, text: string) => (label ? `${label} ${text}` : text);
