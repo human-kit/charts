@@ -227,6 +227,18 @@ export type ChartBarProps<T> = ChartMarkData<T> & {
 	layout?: 'grouped' | 'stacked';
 	/** The space between the bars of a group, as a fraction of a bar. The default is 0.1. */
 	groupPadding?: number;
+	/**
+	 * The radius of the corners at the end of each bar, in pixels. The corners at zero stay
+	 * square. The default is 0. A stacked layout ignores it.
+	 */
+	radius?: number;
+	/**
+	 * Shows the value of each bar after its end. `true` writes the value in the format of the
+	 * value axis; a function writes the text of each point. The chart makes space for the labels.
+	 * The labels are hidden from assistive technology: the name of each bar already has the
+	 * value. The default is `false`. A stacked layout ignores it.
+	 */
+	labels?: boolean | ((point: ChartPoint<T>) => string);
 };
 
 export type ChartAreaProps<T> = ChartMarkData<T> & {

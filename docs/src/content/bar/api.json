@@ -60,6 +60,20 @@
 					"required": false,
 					"default": "0.1",
 					"description": "The space between the bars of a group, as a fraction of a bar. The default is 0.1."
+				},
+				{
+					"name": "radius",
+					"type": "number",
+					"required": false,
+					"default": "0",
+					"description": "The radius of the corners at the end of each bar, in pixels. The corners at zero stay\nsquare. The default is 0. A stacked layout ignores it."
+				},
+				{
+					"name": "labels",
+					"type": "boolean | ((point: ChartPoint<T>) => string)",
+					"required": false,
+					"default": "false",
+					"description": "Shows the value of each bar after its end. `true` writes the value in the format of the\nvalue axis; a function writes the text of each point. The chart makes space for the labels.\nThe labels are hidden from assistive technology: the name of each bar already has the\nvalue. The default is `false`. A stacked layout ignores it."
 				}
 			],
 			"dataAttributes": [
