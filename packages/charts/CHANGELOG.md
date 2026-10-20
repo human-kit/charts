@@ -1,5 +1,11 @@
 # @human-kit/charts
 
+## 0.4.0
+
+### Minor Changes
+
+- [#26](https://github.com/human-kit/charts/pull/26) [`ab8fdf4`](https://github.com/human-kit/charts/commit/ab8fdf45d3e47190ec9f08813b82a66ab851871b) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - `Chart.Tooltip` can follow the pointer (`follow`), and it has `data-entering` and `data-exiting` for CSS animations: it closes after the animation of the closing.
+
 ## 0.3.0
 
 ### Minor Changes
