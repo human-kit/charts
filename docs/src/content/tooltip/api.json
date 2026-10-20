@@ -25,7 +25,7 @@
 					"type": "boolean",
 					"required": false,
 					"default": "false",
-					"description": "Places the tooltip at the pointer and moves it with the pointer, over the point under it.\nFor a large mark, as a long bar, whose anchor can be far from the pointer. The point that\nhas the keyboard focus keeps its tooltip at the point. The default is `false`."
+					"description": "Moves the tooltip along with the pointer, at the height of the point under it. For a large\nmark, as a long bar, whose anchor can be far from the pointer. The point that has the\nkeyboard focus keeps its tooltip at the point. The default is `false`."
 				},
 				{
 					"name": "class",

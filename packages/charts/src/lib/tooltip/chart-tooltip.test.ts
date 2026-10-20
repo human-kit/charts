@@ -33,7 +33,8 @@ describe('Chart.Tooltip', () => {
 		const above =
 			document.querySelector('svg')!.getBoundingClientRect().top -
 			document.querySelector('figure')!.getBoundingClientRect().top;
-		expect(position()[1]).toBeCloseTo(above + cy + 10 - 8, 0);
+		// Only along: at the height of the point, not of the pointer.
+		expect(position()[1]).toBeCloseTo(above + cy - 8, 0);
 
 		await hoverAt(cx + 24, cy + 10);
 		expect(position()[0]).toBeCloseTo(cx + 24, 0);
@@ -69,6 +70,27 @@ describe('Chart.Tooltip', () => {
 		await userEvent.keyboard('{ArrowRight}');
 		const point = points()[1];
 		expect(position()[0]).toBeCloseTo(Number(point.getAttribute('cx')), 0);
+	});
+
+	it('stays in its place while an animation of transform closes it', async () => {
+		const style = document.createElement('style');
+		style.textContent = `
+			@keyframes out { to { transform: scale(0.9) } }
+			[data-tooltip][data-exiting] { animation: out 400ms }
+		`;
+		document.head.append(style);
+		try {
+			render(PartsTest);
+			points()[0].focus();
+			await userEvent.keyboard('{ArrowRight}');
+			const open = tooltip()!.getBoundingClientRect();
+			await userEvent.keyboard('{Escape}');
+			const closing = tooltip()!.getBoundingClientRect();
+			expect(closing.left + closing.width / 2).toBeCloseTo(open.left + open.width / 2, 0);
+			expect(closing.bottom).toBeLessThanOrEqual(open.bottom + 0.5);
+		} finally {
+			style.remove();
+		}
 	});
 
 	it('marks the opening for CSS, and closes after the animation of the closing', async () => {
