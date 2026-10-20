@@ -1,5 +1,11 @@
 # @human-kit/charts
 
+## 0.4.1
+
+### Patch Changes
+
+- [#28](https://github.com/human-kit/charts/pull/28) [`0ab172f`](https://github.com/human-kit/charts/commit/0ab172f93cdb0228256b872d33f54757b4d673da) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - A `Chart.Tooltip` that follows the pointer stays in the width of the page, not of the figure: on a figure narrower than the tooltip, it no longer stops at the edges.
+
 ## 0.4.0
 
 ### Minor Changes
