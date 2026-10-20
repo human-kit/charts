@@ -50,6 +50,15 @@ describe('Chart.Tooltip', () => {
 		expect(box.right).toBeLessThanOrEqual(document.documentElement.clientWidth + 0.5);
 	});
 
+	it('follows the pointer only as far as the box that cuts it', async () => {
+		const { container } = render(PartsTest, { follow: true, wide: true });
+		container.style.cssText = 'overflow: hidden; width: 320px; padding: 0 10px';
+		const clip = container.getBoundingClientRect();
+		const point = points()[5];
+		await hoverAt(Number(point.getAttribute('cx')), Number(point.getAttribute('cy')));
+		expect(tooltip()!.getBoundingClientRect().right).toBeLessThanOrEqual(clip.right + 0.5);
+	});
+
 	it('keeps the tooltip of the focused point at the point when it follows the pointer', async () => {
 		render(PartsTest, { follow: true });
 		// The pointer was in the plot and left it: the focus has no pointer to follow.
