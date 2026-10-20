@@ -41,7 +41,7 @@ The tooltip is HTML, thus it goes in `Chart.Root` and not in `Chart.Plot`. It ma
 
 `offset` is the distance between the point and the tooltip, in pixels. The tooltip is above the point, and its middle is at the x position of the point.
 
-With `follow`, the tooltip goes to the pointer and moves with it, over the point under the pointer. Use it for a large mark, as a long bar, whose position can be far from the pointer. The point that has the keyboard focus keeps its tooltip at the point.
+With `follow`, the tooltip goes to the pointer and moves with it, over the point under the pointer. Use it for a large mark, as a long bar, whose position can be far from the pointer. The point that has the keyboard focus keeps its tooltip at the point. A tooltip that follows the pointer stays in the width of the page instead of the figure: on a figure narrower than the tooltip, it still goes where the pointer goes.
 
 ## Content of your own
 

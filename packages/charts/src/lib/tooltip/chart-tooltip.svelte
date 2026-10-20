@@ -93,26 +93,32 @@
 
 	// The figure is the containing block of the tooltip, thus the position adds the distance from
 	// the padding edge of the figure to the plot. The tooltip shows only in a browser.
-	const plotOffset = $derived.by(() => {
+	// `bounds` is the space the tooltip stays in, from the padding edge of the figure: the width of
+	// the figure, or the width of the page for a tooltip that follows the pointer, which must go
+	// wherever the pointer goes on a figure narrower than itself.
+	const placement = $derived.by(() => {
 		const plot = ctx.plotElement;
 		const figure = plot?.closest('figure');
-		if (!tip || !plot || !figure) return [0, 0, 0];
+		if (!tip || !plot || !figure) return { offset: [0, 0], bounds: [0, 0] };
 		const a = plot.getBoundingClientRect();
 		const b = figure.getBoundingClientRect();
-		return [
-			a.left - b.left - figure.clientLeft,
-			a.top - b.top - figure.clientTop,
-			figure.clientWidth
-		];
+		const start = b.left + figure.clientLeft;
+		return {
+			offset: [a.left - start, a.top - b.top - figure.clientTop],
+			bounds: follow
+				? [-start, document.documentElement.clientWidth - start]
+				: [0, figure.clientWidth]
+		};
 	});
 
-	// The tooltip stays in the width of the figure: near an edge, it moves away from the point.
-	// Thus it does not make the page wider on a narrow screen.
+	// Near an edge of its bounds, the tooltip moves away from the point. Thus it does not make the
+	// page wider on a narrow screen.
 	let width = $state(0);
 	const left = $derived.by(() => {
-		const center = plotOffset[0] + (tip?.x ?? 0);
+		const center = placement.offset[0] + (tip?.x ?? 0);
 		const half = width / 2;
-		return Math.max(half, Math.min(center, plotOffset[2] - half));
+		const [min, max] = placement.bounds;
+		return Math.max(min + half, Math.min(center, max - half));
 	});
 
 	/** The animations that CSS gives the tooltip, or none in a browser without the API. */
@@ -161,7 +167,7 @@
 		style:position="absolute"
 		bind:offsetWidth={width}
 		style:left="{left}px"
-		style:top="{plotOffset[1] + tip.y - offset}px"
+		style:top="{placement.offset[1] + tip.y - offset}px"
 		style:transform="translate(-50%, -100%)"
 		style:pointer-events="none"
 		{...restProps}
