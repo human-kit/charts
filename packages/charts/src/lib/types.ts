@@ -295,6 +295,15 @@ export type ChartTooltipProps = Omit<HTMLAttributes<HTMLDivElement>, 'class' | '
 	children?: Snippet<[ChartTooltipState]>;
 	/** The distance between the point and the tooltip, in pixels. The default is 8. */
 	offset?: number;
-	/** The CSS class names of the tooltip. */
+	/**
+	 * Places the tooltip at the pointer and moves it with the pointer, over the point under it.
+	 * For a large mark, as a long bar, whose anchor can be far from the pointer. The point that
+	 * has the keyboard focus keeps its tooltip at the point. The default is `false`.
+	 */
+	follow?: boolean;
+	/**
+	 * The CSS class names of the tooltip. It has `data-entering` while it opens and `data-exiting`
+	 * while it closes, for CSS animations: it closes after the animations end.
+	 */
 	class?: string;
 };

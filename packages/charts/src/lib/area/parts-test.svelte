@@ -8,12 +8,14 @@
 		stacked = true,
 		visibility = 'screen-reader',
 		caption,
-		long = false
+		long = false,
+		follow = false
 	}: {
 		stacked?: boolean;
 		visibility?: 'visible' | 'screen-reader';
 		caption?: string;
 		long?: boolean;
+		follow?: boolean;
 	} = $props();
 
 	const data: Row[] = [
@@ -49,7 +51,8 @@
 			{#snippet children(tip)}<div style="width: 160px">{tip.xText}, a long text</div>{/snippet}
 		</Chart.Tooltip>
 	{:else}
-		<Chart.Tooltip />
+		<!-- Narrow, thus the edges of the figure do not move it. -->
+		<Chart.Tooltip {follow} style="width: 40px" />
 	{/if}
 	<Chart.DataTable {visibility} {caption} />
 </Chart.Root>
