@@ -1,5 +1,11 @@
 # @human-kit/charts
 
+## 0.4.3
+
+### Patch Changes
+
+- [#32](https://github.com/human-kit/charts/pull/32) [`603eecb`](https://github.com/human-kit/charts/commit/603eecbe1f8cda23fff7f3600c0800e2e259631d) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - A `Chart.Tooltip` that follows the pointer moves only along it, at the height of the point. The tooltip is centred with `translate` instead of `transform`, thus a CSS animation of `transform` no longer moves it to the side while it opens or closes.
+
 ## 0.4.2
 
 ### Patch Changes
