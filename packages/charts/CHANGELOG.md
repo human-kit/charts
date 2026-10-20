@@ -1,5 +1,11 @@
 # @human-kit/charts
 
+## 0.4.2
+
+### Patch Changes
+
+- [#30](https://github.com/human-kit/charts/pull/30) [`dbce3d1`](https://github.com/human-kit/charts/commit/dbce3d1f48d86abf1c80d534d51cc6e0313f305f) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - A `Chart.Tooltip` that follows the pointer stays in the nearest ancestor that clips it, not in the page: a page frame with `overflow: hidden` no longer cuts it.
+
 ## 0.4.1
 
 ### Patch Changes
