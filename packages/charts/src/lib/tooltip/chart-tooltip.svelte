@@ -29,9 +29,10 @@
 		const point = entry.points[index];
 		const anchor = ctx.anchor(entry.mark, entry.series, index);
 		if (!anchor) return null;
-		// A tooltip that follows the pointer goes with it over the point under it. The point that has
-		// the keyboard focus has no pointer, thus its tooltip stays at the point.
-		const [x, y] = follow && pointer && id === hoveredId ? pointer : anchor;
+		// A tooltip that follows the pointer goes along with it, at the height of the point under it.
+		// The point that has the keyboard focus has no pointer, thus its tooltip stays at the point.
+		const x = follow && pointer && id === hoveredId ? pointer[0] : anchor[0];
+		const y = anchor[1];
 		return {
 			point,
 			x,
@@ -179,7 +180,7 @@
 		bind:offsetWidth={width}
 		style:left="{left}px"
 		style:top="{placement.offset[1] + tip.y - offset}px"
-		style:transform="translate(-50%, -100%)"
+		style:translate="-50% -100%"
 		style:pointer-events="none"
 		{...restProps}
 	>

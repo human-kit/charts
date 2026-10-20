@@ -296,9 +296,9 @@ export type ChartTooltipProps = Omit<HTMLAttributes<HTMLDivElement>, 'class' | '
 	/** The distance between the point and the tooltip, in pixels. The default is 8. */
 	offset?: number;
 	/**
-	 * Places the tooltip at the pointer and moves it with the pointer, over the point under it.
-	 * For a large mark, as a long bar, whose anchor can be far from the pointer. The point that
-	 * has the keyboard focus keeps its tooltip at the point. The default is `false`.
+	 * Moves the tooltip along with the pointer, at the height of the point under it. For a large
+	 * mark, as a long bar, whose anchor can be far from the pointer. The point that has the
+	 * keyboard focus keeps its tooltip at the point. The default is `false`.
 	 */
 	follow?: boolean;
 	/**

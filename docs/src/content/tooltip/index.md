@@ -41,7 +41,7 @@ The tooltip is HTML, thus it goes in `Chart.Root` and not in `Chart.Plot`. It ma
 
 `offset` is the distance between the point and the tooltip, in pixels. The tooltip is above the point, and its middle is at the x position of the point.
 
-With `follow`, the tooltip goes to the pointer and moves with it, over the point under the pointer. Use it for a large mark, as a long bar, whose position can be far from the pointer. The point that has the keyboard focus keeps its tooltip at the point. A tooltip that follows the pointer stays in the box that would cut it (the nearest ancestor whose `overflow` is not `visible`, or the page) instead of the figure: on a figure narrower than the tooltip, it still goes where the pointer goes.
+With `follow`, the tooltip moves along with the pointer, at the height of the point under the pointer. Use it for a large mark, as a long bar, whose position can be far from the pointer. The point that has the keyboard focus keeps its tooltip at the point. A tooltip that follows the pointer stays in the box that would cut it (the nearest ancestor whose `overflow` is not `visible`, or the page) instead of the figure: on a figure narrower than the tooltip, it still goes where the pointer goes.
 
 ## Content of your own
 
@@ -81,7 +81,7 @@ The last three attributes are on the default content only.
 
 ### Animation
 
-The box has `data-entering` while it opens and `data-exiting` while it closes. Give them a CSS animation: the box goes after the animation of `data-exiting` ends. Without an animation, it goes at once.
+The box has `data-entering` while it opens and `data-exiting` while it closes. It is centred with the `translate` property, thus an animation of `transform` does not move it away from its place. Give them a CSS animation: the box goes after the animation of `data-exiting` ends. Without an animation, it goes at once.
 
 ```css
 @keyframes tooltip-in {
