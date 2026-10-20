@@ -39,6 +39,17 @@ describe('Chart.Tooltip', () => {
 		expect(position()[0]).toBeCloseTo(cx + 24, 0);
 	});
 
+	it('follows the pointer past the edges of the figure, in the width of the page', async () => {
+		render(PartsTest, { follow: true, wide: true });
+		const figure = document.querySelector('figure')!.getBoundingClientRect();
+		const point = points()[5];
+		await hoverAt(Number(point.getAttribute('cx')), Number(point.getAttribute('cy')));
+		const box = tooltip()!.getBoundingClientRect();
+		// Wider than the figure, centred on the pointer near its right edge: it goes past the edge.
+		expect(box.right).toBeGreaterThan(figure.right);
+		expect(box.right).toBeLessThanOrEqual(document.documentElement.clientWidth + 0.5);
+	});
+
 	it('keeps the tooltip of the focused point at the point when it follows the pointer', async () => {
 		render(PartsTest, { follow: true });
 		// The pointer was in the plot and left it: the focus has no pointer to follow.

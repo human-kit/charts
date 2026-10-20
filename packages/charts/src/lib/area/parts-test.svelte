@@ -9,13 +9,15 @@
 		visibility = 'screen-reader',
 		caption,
 		long = false,
-		follow = false
+		follow = false,
+		wide = false
 	}: {
 		stacked?: boolean;
 		visibility?: 'visible' | 'screen-reader';
 		caption?: string;
 		long?: boolean;
 		follow?: boolean;
+		wide?: boolean;
 	} = $props();
 
 	const data: Row[] = [
@@ -52,7 +54,7 @@
 		</Chart.Tooltip>
 	{:else}
 		<!-- Narrow, thus the edges of the figure do not move it. -->
-		<Chart.Tooltip {follow} style="width: 40px" />
+		<Chart.Tooltip {follow} style="width: {wide ? 200 : 40}px" />
 	{/if}
 	<Chart.DataTable {visibility} {caption} />
 </Chart.Root>
