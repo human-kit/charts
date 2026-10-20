@@ -94,8 +94,8 @@
 	// The figure is the containing block of the tooltip, thus the position adds the distance from
 	// the padding edge of the figure to the plot. The tooltip shows only in a browser.
 	// `bounds` is the space the tooltip stays in, from the padding edge of the figure: the width of
-	// the figure, or the width of the page for a tooltip that follows the pointer, which must go
-	// wherever the pointer goes on a figure narrower than itself.
+	// the figure, or for a tooltip that follows the pointer —which must go wherever the pointer goes
+	// on a figure narrower than itself— the width of the box that would cut it.
 	const placement = $derived.by(() => {
 		const plot = ctx.plotElement;
 		const figure = plot?.closest('figure');
@@ -105,11 +105,22 @@
 		const start = b.left + figure.clientLeft;
 		return {
 			offset: [a.left - start, a.top - b.top - figure.clientTop],
-			bounds: follow
-				? [-start, document.documentElement.clientWidth - start]
-				: [0, figure.clientWidth]
+			bounds: follow ? clipBounds(figure).map((x) => x - start) : [0, figure.clientWidth]
 		};
 	});
+
+	/**
+	 * The left and the right of the nearest ancestor that cuts what overflows it, on the screen,
+	 * or of the page without one.
+	 */
+	function clipBounds(figure: Element): [number, number] {
+		for (let node = figure.parentElement; node; node = node.parentElement) {
+			if (getComputedStyle(node).overflowX === 'visible') continue;
+			const box = node.getBoundingClientRect();
+			return [box.left + node.clientLeft, box.left + node.clientLeft + node.clientWidth];
+		}
+		return [0, document.documentElement.clientWidth];
+	}
 
 	// Near an edge of its bounds, the tooltip moves away from the point. Thus it does not make the
 	// page wider on a narrow screen.
