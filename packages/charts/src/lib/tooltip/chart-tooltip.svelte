@@ -3,11 +3,19 @@
 	import { useChartContext } from '../root/context.js';
 	import type { ChartTooltipProps } from '../types.js';
 
-	let { children, offset = 8, class: className = '', ...restProps }: ChartTooltipProps = $props();
+	let {
+		children,
+		offset = 8,
+		follow = false,
+		class: className = '',
+		...restProps
+	}: ChartTooltipProps = $props();
 
 	const ctx = useChartContext('Chart.Tooltip');
 
 	let hoveredId: string | null = $state(null);
+	// Where the pointer is in the plot, for a tooltip that follows it.
+	let pointer: [number, number] | null = $state(null);
 	// Escape closes the tooltip until the user moves to another point.
 	let dismissed = $state(false);
 
@@ -21,10 +29,13 @@
 		const point = entry.points[index];
 		const anchor = ctx.anchor(entry.mark, entry.series, index);
 		if (!anchor) return null;
+		// A tooltip that follows the pointer goes with it over the point under it. The point that has
+		// the keyboard focus has no pointer, thus its tooltip stays at the point.
+		const [x, y] = follow && pointer && id === hoveredId ? pointer : anchor;
 		return {
 			point,
-			x: anchor[0],
-			y: anchor[1],
+			x,
+			y,
 			xText: ctx.formatX(ctx.toX(point.x)),
 			yText: ctx.formatY(ctx.toY(point.y)),
 			horizontal: entry.horizontal
@@ -44,6 +55,8 @@
 			const next = ctx.nearest(event.clientX, event.clientY);
 			if (next !== hoveredId) dismissed = false;
 			hoveredId = next;
+			const box = plot.getBoundingClientRect();
+			pointer = [event.clientX - box.left, event.clientY - box.top];
 		};
 		// A finger leaves the plot when it lifts. The tooltip of a tap stays until the next tap.
 		const onPointerLeave = (event: PointerEvent) => {
@@ -101,6 +114,36 @@
 		const half = width / 2;
 		return Math.max(half, Math.min(center, plotOffset[2] - half));
 	});
+
+	/** The animations that CSS gives the tooltip, or none in a browser without the API. */
+	function animationsOf(node: HTMLElement): Animation[] {
+		return typeof node.getAnimations === 'function' ? node.getAnimations() : [];
+	}
+
+	/**
+	 * `data-entering` while the tooltip opens, thus CSS can animate it in. The attribute goes when
+	 * the animations that it starts end.
+	 */
+	function entering(node: HTMLElement) {
+		node.setAttribute('data-entering', '');
+		Promise.all(animationsOf(node).map((animation) => animation.finished))
+			.catch(() => undefined)
+			.then(() => node.removeAttribute('data-entering'));
+	}
+
+	/**
+	 * `data-exiting` while the tooltip closes. It stays for as long as the animations that the
+	 * attribute starts, thus CSS can animate it out. Without an animation it goes at once.
+	 */
+	function exiting(node: HTMLElement) {
+		node.removeAttribute('data-entering');
+		node.setAttribute('data-exiting', '');
+		const ends = animationsOf(node).map((animation) => {
+			const end = animation.effect?.getComputedTiming().endTime;
+			return typeof end === 'number' ? end : 0;
+		});
+		return { duration: Math.max(0, ...ends) };
+	}
 </script>
 
 <!--
@@ -110,6 +153,8 @@
 {#if tip}
 	<div
 		class={className}
+		{@attach entering}
+		out:exiting
 		aria-hidden="true"
 		data-tooltip=""
 		data-series={tip.point.series || undefined}

@@ -41,6 +41,8 @@ The tooltip is HTML, thus it goes in `Chart.Root` and not in `Chart.Plot`. It ma
 
 `offset` is the distance between the point and the tooltip, in pixels. The tooltip is above the point, and its middle is at the x position of the point.
 
+With `follow`, the tooltip goes to the pointer and moves with it, over the point under the pointer. Use it for a large mark, as a long bar, whose position can be far from the pointer. The point that has the keyboard focus keeps its tooltip at the point.
+
 ## Content of your own
 
 Without children, the tooltip shows the category or the x value, then the name of the series and the value. Give `children` to replace this content. The snippet receives the point and its values as text, in the formats of the chart.
@@ -76,6 +78,32 @@ Without children, the tooltip shows the category or the x value, then the name o
 | Name of the series  | `data-tooltip-series` | Empty.                               |
 
 The last three attributes are on the default content only.
+
+### Animation
+
+The box has `data-entering` while it opens and `data-exiting` while it closes. Give them a CSS animation: the box goes after the animation of `data-exiting` ends. Without an animation, it goes at once.
+
+```css
+@keyframes tooltip-in {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes tooltip-out {
+	to {
+		opacity: 0;
+	}
+}
+
+.chart [data-tooltip][data-entering] {
+	animation: tooltip-in 100ms;
+}
+
+.chart [data-tooltip][data-exiting] {
+	animation: tooltip-out 80ms;
+}
+```
 
 ## API reference
 
