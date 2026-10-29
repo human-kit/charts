@@ -411,8 +411,9 @@
 			focused = pointAt(id) as ChartPoint<T> | null;
 		},
 		onfocusout(event) {
-			const next = event.relatedTarget as Node | null;
-			if (next && (event.currentTarget as Node).contains(next)) return;
+			// A move to another point keeps the state, and focusin changes it. A move to another
+			// element, in the plot or out of it, clears the state.
+			if (positions.has((event.relatedTarget as Element | null)?.id ?? '')) return;
 			focusedId = null;
 			focusVisible = false;
 			focused = null;
