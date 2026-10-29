@@ -13,7 +13,7 @@ A dot mark can also go on a line chart or a bar chart, for example to show
 targets or outliers.
 
 The parts of version 1 assume that the x values of a series come in order, as
-on a time axis. A scatter plot breaks that assumption: the x values are in no
+on a time axis. A scatter plot breaks that assumption. The x values are in no
 order, two dots can have the same x value, and the two axes are both measures.
 Thus this RFC also changes the keyboard order, the names of the points, the
 data table and the legend.
@@ -122,8 +122,8 @@ When a label is present:
 - `Chart.DataTable` uses the label as the header of the column.
 
 Without a label, a name has no field, as RFC 0001 decided (open question 6).
-The labels are on the root and not on the axes, because the server makes the
-names before it makes an axis that comes after the mark.
+The labels are on the root and not on the axes. The reason is that the server
+makes the names before it makes an axis that comes after the mark.
 
 The labels change the names of all marks, not only the dot mark. A line chart
 without labels keeps its names.
@@ -211,8 +211,8 @@ A new fixture, "a scatter plot with two axes, a grid and a legend", goes into
 
 - Unit tests for the sort of the dots and for the tie rule of `ArrowDown`.
 - Unit tests for the paths of the six shapes: the same area for each shape.
-- Browser tests for the keyboard table on dots in no order, on dots with the
-  same x value and on dots on top of each other.
+- Browser tests for the keyboard table. The cases are dots in no order, dots
+  with the same x value and dots on top of each other.
 - A server test: the same markup on the server and on the client, with the
   labels and the shapes.
 - An accessibility tree test: names with labels, roles, and the hidden legend.
@@ -238,7 +238,7 @@ All of the steps are complete (2026-10-16).
 - `Chart.Dot`, the labels, the `list` table and the six shapes are in
   `packages/charts`. A mark sets `list: true` to get the `list` table and the
   names that start with the series. Its `symbol(series)` gives the legend the
-  name of the shape and its path, thus a legend without dots does not include
+  name of the shape and its path. Thus, a legend without dots does not include
   the code of the shapes.
 - The sixth shape is `triangle-down` and not `wye`. It needs no new code: it
   is the triangle upside down.
@@ -252,7 +252,7 @@ All of the steps are complete (2026-10-16).
   | Stacked areas, axes, grid, legend, tooltip and data table | 10.20 kB | 10.62 kB |
   | A scatter plot with two axes, a grid and a legend         | —        | 7.59 kB  |
 
-  Each change to an existing part is smaller than 0.2 kB: the root and the
+  Each change to an existing part is smaller than 0.2 kB. The root and the
   axis add 0.10 kB, the legend 0.14 kB, the data table 0.13 kB and the
   tooltip 0.03 kB. A chart with all of them adds 0.42 kB.
 
@@ -286,7 +286,7 @@ key moved the focus to the expected dot, and NVDA read:
 | `Enter`      | "current"                                                                                                             |
 
 In browse mode, NVDA reads the data table as "table with 26 rows and 3
-columns", with the headers "origin", "Weight (lb)" and "Fuel economy (mpg)".
+columns". The headers are "origin", "Weight (lb)" and "Fuel economy (mpg)".
 
 ## Open questions
 
@@ -305,7 +305,7 @@ columns", with the headers "origin", "Weight (lb)" and "Fuel economy (mpg)".
    identifies a series only by color does not obey RFC 0001.
 4. **The place of the labels.** Decided: `xLabel` and `yLabel` on the root.
    The candidate is the `label` of `Chart.Axis`. A chart can have no axis, two
-   axes for one channel, or an axis after the mark, and the server makes the
+   axes for one channel, or an axis after the mark. The server makes the
    names before it sees that axis.
 5. **The order of a name.** Decided: the series first, then x, then y:
    "Europe, Weight (lb) 2,130, Fuel economy (mpg) 31". A line keeps "2015,

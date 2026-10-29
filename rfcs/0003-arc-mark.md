@@ -106,7 +106,7 @@ a stylesheet can give each slice a color. The series is a
 ### Labels
 
 With `labels`, the mark puts the text of each slice in the middle of the
-slice. The labels are for the eye only, as on a bar: they are in a group with
+slice. The labels are for the eye only, as on a bar. They are in a group with
 `aria-hidden="true"`, because the names of the slices already give the
 values. A label that is wider than its slice does not show.
 
@@ -154,7 +154,7 @@ a mark with axes is not a use case of this RFC.
 ### Pointer
 
 The tooltip opens on the slice under the pointer. The arc mark gives the
-root a `distance` that is 0 in the slice and large out of it, thus a pointer
+root a `distance` that is 0 in the slice and large out of it. Thus, a pointer
 in the hole or out of the circle opens no tooltip. The tooltip points to the
 middle of the slice.
 
@@ -224,7 +224,7 @@ All of the steps are complete (2026-10-29).
 
 - `Chart.Arc` is in `packages/charts`. A mark sets `share(point)` to get the
   names with the share, the share column and the categories in the legend.
-  `share` gives the text of the share, and not a number: the arc mark makes
+  `share` gives the text of the share, and not a number. The arc mark makes
   the percent format, thus a chart without an arc mark does not include it.
   For this, the context gives the `locale` of the root.
 - The x scale is a band scale, as on a bar chart. The root formats a category
@@ -243,7 +243,7 @@ All of the steps are complete (2026-10-29).
   | A scatter plot with two axes, a grid and a legend         | 7.65 kB  | 7.80 kB  |
   | A donut with a legend and a data table                    | —        | 8.42 kB  |
 
-  Each change to an existing part is smaller than 0.2 kB: the root adds
+  Each change to an existing part is smaller than 0.2 kB. The root adds
   0.06 kB, the legend 0.09 kB and the data table 0.04 kB. A chart with all of
   them adds 0.19 kB.
 
@@ -279,8 +279,8 @@ The series has no name, thus NVDA does not read a group.
    a second path for the same data.
 3. **The text of a name.** Decided: the value and the share,
    "Europe, 1,200, 34%". The share is what a pie chart shows. The candidates
-   were the share only, which puts the value only in the data table, and the
-   value only, which does not give the share that the eye sees.
+   were the share only and the value only. The share only puts the value only
+   in the data table. The value only does not give the share that the eye sees.
 4. **What identifies a slice on the screen.** Decided: the legend in the
    order of the slices, and labels in the slices on request. The candidate
    is labels by default. A label does not fit in a small slice, and labels out
