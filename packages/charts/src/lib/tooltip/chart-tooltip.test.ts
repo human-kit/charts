@@ -72,6 +72,26 @@ describe('Chart.Tooltip', () => {
 		expect(position()[0]).toBeCloseTo(Number(point.getAttribute('cx')), 0);
 	});
 
+	it('closes when the focus goes from a point to another element in the plot', async () => {
+		render(PartsTest);
+		const svg = document.querySelector('svg')!;
+		const box = document.createElementNS(svg.namespaceURI, 'foreignObject');
+		box.setAttribute('width', '40');
+		box.setAttribute('height', '20');
+		const button = document.createElement('button');
+		box.append(button);
+		svg.append(box);
+		points()[0].focus();
+		await userEvent.keyboard('{ArrowRight}');
+		expect(tooltip()).not.toBeNull();
+
+		button.focus();
+		await tick();
+		expect(points()[1].hasAttribute('data-focused')).toBe(false);
+		expect(points()[1].hasAttribute('data-focus-visible')).toBe(false);
+		await expect.poll(() => tooltip()).toBeNull();
+	});
+
 	it('stays in its place while an animation of transform closes it', async () => {
 		const style = document.createElement('style');
 		style.textContent = `
