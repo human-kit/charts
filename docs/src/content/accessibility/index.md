@@ -55,6 +55,8 @@ A mark can have its categories on the y axis, as horizontal bars do. Then the ve
 
 A dot mark puts the dots of a series in the order of x, then of y. When two dots of the next series have the same distance in x, `ArrowDown` goes to the dot with the closest y value.
 
+An arc mark has one series, thus all of the arrows move in it. `ArrowRight` and `ArrowDown` go to the next slice, in the clockwise direction. `ArrowLeft` and `ArrowUp` go to the previous slice.
+
 `ArrowUp` and `ArrowDown` move between the series in the order of the legend. This order does not change when two lines cross on the screen. Two marks can show a series with the same name, for example an area and a line. Then `ArrowDown` goes to that series in the next mark before it goes to the next series.
 
 ## Names
@@ -62,6 +64,8 @@ A dot mark puts the dots of a series in the order of x, then of y. When two dots
 The name of a point has the category or the x value first, then the name of the series, then the value. For example, "Q2, North, 31". The values use the formats of the chart: `xFormat`, `yFormat` and `locale`.
 
 With `xLabel` and `yLabel` on `Chart.Root`, each value comes after the label of its channel. A dot starts with the series, because its two values are both measures: "Europe, Weight (lb) 2,130, Fuel economy (mpg) 31".
+
+A slice of an arc mark adds its share of the total after the value: "Solar, Energy (GWh) 412, 37.9%".
 
 The name does not include the name of the field. A field name is a name in the code, for example `revenue_usd`. It is not a text for a user. When two marks show two fields of the same rows, give each mark a `name`. The name is the name of the series of the mark, thus a point is "2015, Cost, 40" and not "2015, 40".
 

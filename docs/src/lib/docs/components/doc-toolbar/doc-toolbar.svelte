@@ -22,6 +22,7 @@
 		area: 'area',
 		bar: 'bar',
 		dot: 'dot',
+		arc: 'arc',
 		'axis-and-grid': 'axis',
 		legend: 'legend',
 		tooltip: 'tooltip',

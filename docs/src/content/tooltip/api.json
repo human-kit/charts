@@ -32,7 +32,7 @@
 					"type": "string",
 					"required": false,
 					"default": null,
-					"description": "The CSS class names of the tooltip."
+					"description": "The CSS class names of the tooltip. It has `data-entering` while it opens and `data-exiting`\nwhile it closes, for CSS animations: it closes after the animations end."
 				}
 			],
 			"dataAttributes": [

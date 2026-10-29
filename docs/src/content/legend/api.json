@@ -32,7 +32,11 @@
 				},
 				{
 					"name": "data-series",
-					"description": "On each item. The value is the name of the series."
+					"description": "On each item of a series. The value is the name of the series."
+				},
+				{
+					"name": "data-category",
+					"description": "On each item of an arc mark, in place of `data-series`. The value is the category."
 				},
 				{
 					"name": "data-symbol",

@@ -79,6 +79,12 @@ export type ChartMark = {
 	 * with its center at 0,0 that fits in 12 pixels.
 	 */
 	symbol?: (series: number) => { name: ChartSymbol; d: string };
+	/**
+	 * The share of a point in the total of its series, as text, for a mark that shows parts of a
+	 * whole, as the arc mark does. It is empty when the total is 0. Then the names and the data
+	 * table add the share, the legend lists the x values, and all of the arrows move in the series.
+	 */
+	share?: (point: ChartPoint) => string;
 };
 
 /** One series of a mark with points, in the order of the keyboard. */
@@ -87,6 +93,8 @@ export type ChartEntry = {
 	series: number;
 	points: ChartPoint[];
 	horizontal: boolean;
+	/** Whether the mark shows parts of a whole: all of the arrows move in the series. */
+	share: boolean;
 };
 
 /** A tick of an axis. */
@@ -127,6 +135,8 @@ export type ChartContext = {
 	readonly xLabel: string | undefined;
 	/** The name of the y channel for a user, or `undefined`. */
 	readonly yLabel: string | undefined;
+	/** The locale of the values in names, ticks, the tooltip and the data table. */
+	readonly locale: string | undefined;
 	/** The size of the SVG, in pixels. */
 	readonly width: number;
 	/**

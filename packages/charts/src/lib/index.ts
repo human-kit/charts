@@ -7,6 +7,7 @@ export { default as ChartLine } from './line/chart-line.svelte';
 export { default as ChartBar } from './bar/chart-bar.svelte';
 export { default as ChartArea } from './area/chart-area.svelte';
 export { default as ChartDot } from './dot/chart-dot.svelte';
+export { default as ChartArc } from './arc/chart-arc.svelte';
 export { default as ChartLegend } from './legend/chart-legend.svelte';
 export { default as ChartDataTable } from './data-table/chart-data-table.svelte';
 export { default as ChartTooltip } from './tooltip/chart-tooltip.svelte';
@@ -27,6 +28,7 @@ export type {
 	ChartBarProps,
 	ChartAreaProps,
 	ChartDotProps,
+	ChartArcProps,
 	ChartSymbol,
 	ChartLegendProps,
 	ChartDataTableProps,
