@@ -1,6 +1,6 @@
 # RFC 0004: The rule mark (reference lines)
 
-- **Status:** Draft
+- **Status:** Accepted
 - **Date:** 2026-10-29
 - **Scope:** version 0.6
 - **Depends on:** [RFC 0001](0001-architecture.md), [RFC 0002](0002-dot-mark.md), [RFC 0003](0003-arc-mark.md)
@@ -273,16 +273,16 @@ None yet.
 
 ## Open questions
 
-1. **The name of the part.** Recommended: `Chart.Rule`. A part has the name of
+1. **The name of the part.** Decided: `Chart.Rule`. A part has the name of
    its shape, as RFC 0002 decided. RFC 0001 already uses the word "rule" for
    this line. The candidates are `Chart.ReferenceLine`, which is long, and
    `Chart.Threshold`, which names one use only.
-2. **A rule as a point.** Recommended: not a point. A rule is a reference and
+2. **A rule as a point.** Decided: not a point. A rule is a reference and
    not a value of the data (see "A rule is not a point"). The candidate is a
    focus stop on each rule, after the points of the series. It gives the
    name of the rule on the plot. But the keyboard has no clear order for it,
    and `Enter` has no action on it.
-3. **How a screen reader user gets the rule.** Recommended: the description
+3. **How a screen reader user gets the rule.** Decided: the description
    of the plot and a `<tfoot>` row of the data table, with `compare` for the
    point names. The candidates are:
    - A name on the element of the rule. In the `application` role, a screen
@@ -293,28 +293,28 @@ None yet.
      not interrupt the user.
    - The point names only. A user who does not use the plot does not get the
      rule.
-4. **The text of the point names.** Recommended: no text by default, and the
+4. **The text of the point names.** Decided: no text by default, and the
    `compare` prop on request. One candidate is a default text "above" and
    "below", which needs a translation. The other is no text at all. Then a sighted user
    gets more information than a screen reader user.
-5. **The prop of the orientation.** Recommended: `axis`, with the values `x`
+5. **The prop of the orientation.** Decided: `axis`, with the values `x`
    and `y`, as on `Chart.Grid`. The candidate is `orientation`, with the
    values `horizontal` and `vertical`. It names the line and not the value,
    thus `orientation="horizontal"` goes with a y value, and that is easy to
    get wrong.
-6. **A value from the data.** Recommended: `value` is a value only. The
+6. **A value from the data.** Decided: `value` is a value only. The
    candidate is a function of the rows, for example `value={mean}`. It needs
    the type `T`, which a part without `data` cannot get, and the library does
    not include aggregation.
-7. **The label.** Recommended: necessary in the type. The candidate is an
+7. **The label.** Decided: necessary in the type. The candidate is an
    optional label with a warning in a development build. A rule without a
    label has no name for a screen reader user.
-8. **The domain.** Recommended: the value of a rule goes into the domain. The
+8. **The domain.** Decided: the value of a rule goes into the domain. The
    candidate is a rule that shows only in the domain of the data. That rule
    is not on the plot when the target is above all of the values, but the
    description still gives it. A sighted user then does not see what a
    screen reader user hears.
-9. **The registration.** Recommended: a second list in the context, next to
+9. **The registration.** Decided: a second list in the context, next to
    the marks. The candidate is `ctx.register` with a mark that has no
    points. It adds no list, but each part that reads `ctx.marks[0]` must then
    skip the rules.
