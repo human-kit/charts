@@ -220,7 +220,7 @@ A new fixture, "a donut with a legend and a data table", goes into
 
 ## Prototype results
 
-Steps 1 to 6 are complete (2026-10-29). The NVDA test is not done yet.
+All of the steps are complete (2026-10-29).
 
 - `Chart.Arc` is in `packages/charts`. A mark sets `share(point)` to get the
   names with the share, the share column and the categories in the legend.
@@ -247,6 +247,27 @@ Steps 1 to 6 are complete (2026-10-29). The NVDA test is not done yet.
   0.06 kB, the legend 0.09 kB and the data table 0.04 kB. A chart with all of
   them adds 0.19 kB.
 
+### Screen reader test
+
+The test used NVDA 2026.2 with Chrome on Windows, with real key presses on
+the demo of the docs page: `Tab` into the chart, then `ArrowRight`,
+`ArrowRight`, `ArrowDown`, `ArrowUp`, `End`, `ArrowDown`, `Home` and `Enter`.
+Each key moved the focus to the expected slice, and NVDA read:
+
+| Key          | NVDA reads                                                                             |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `Tab`        | "Energy of the city by source in 2025, chart, Solar, Energy (GWh) 412, 37.9%, graphic" |
+| `ArrowRight` | "Wind, Energy (GWh) 296, 27.2%, graphic"                                               |
+| `ArrowRight` | "Hydro, Energy (GWh) 231, 21.3%, graphic"                                              |
+| `ArrowDown`  | "Gas, Energy (GWh) 148, 13.6%, graphic"                                                |
+| `ArrowUp`    | "Hydro, Energy (GWh) 231, 21.3%, graphic"                                              |
+| `End`        | "Gas, Energy (GWh) 148, 13.6%, graphic"                                                |
+| `ArrowDown`  | Nothing. The focus stays on the last slice, because the keys do not wrap.              |
+| `Home`       | "Solar, Energy (GWh) 412, 37.9%, graphic"                                              |
+| `Enter`      | "current"                                                                              |
+
+The series has no name, thus NVDA does not read a group.
+
 ## Open questions
 
 1. **The name of the part.** Decided: `Chart.Arc`. A mark has the name of its
@@ -264,5 +285,6 @@ Steps 1 to 6 are complete (2026-10-29). The NVDA test is not done yet.
    order of the slices, and labels in the slices on request. The candidate
    is labels by default. A label does not fit in a small slice, and labels out
    of the circle need a layout that costs bytes.
-5. **The vertical arrows.** Decided for the prototype: they move in the
-   series. The NVDA test confirms it, or this RFC changes.
+5. **The vertical arrows.** Decided: they move in the series. In the NVDA
+   test, `ArrowDown` and `ArrowUp` moved the focus to the next and the
+   previous slice, and NVDA read each slice.
