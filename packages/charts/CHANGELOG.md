@@ -1,5 +1,11 @@
 # @human-kit/charts
 
+## 0.5.0
+
+### Minor Changes
+
+- [#36](https://github.com/human-kit/charts/pull/36) [`88de209`](https://github.com/human-kit/charts/commit/88de2096eaa48182ceab26fb2dc21863fad5a3af) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - Add `Chart.Arc`, a mark for pie and donut charts. It draws one slice of a circle per row, clockwise from the top. The name of each slice gives its share of the total, the data table adds a share column, and the legend lists the categories in the order of the slices. `inner` makes a donut, and `labels` shows the value in each slice when it fits.
+
 ## 0.4.3
 
 ### Patch Changes
