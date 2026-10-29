@@ -180,7 +180,7 @@ RFC 0002.
 | Part              | Change                                                                       |
 | ----------------- | ---------------------------------------------------------------------------- |
 | `ChartMark`       | Optional `share`. The names add the share, and the data table adds a column. |
-| `Chart.Root`      | The names of the points of a `share` mark. No warning for its x scale.       |
+| `Chart.Root`      | The names of the points of a `share` mark, and `locale` in the context.      |
 | `Chart.Legend`    | Lists the x values of a `share` mark, with `data-category`.                  |
 | `Chart.DataTable` | The share column.                                                            |
 | Navigation        | The vertical arrows move in the series of a `share` mark.                    |
@@ -218,6 +218,56 @@ A new fixture, "a donut with a legend and a data table", goes into
 6. Measure the size of each step.
 7. The NVDA test.
 
+## Prototype results
+
+All of the steps are complete (2026-10-29).
+
+- `Chart.Arc` is in `packages/charts`. A mark sets `share(point)` to get the
+  names with the share, the share column and the categories in the legend.
+  `share` gives the text of the share, and not a number: the arc mark makes
+  the percent format, thus a chart without an arc mark does not include it.
+  For this, the context gives the `locale` of the root.
+- The x scale is a band scale, as on a bar chart. The root formats a category
+  only with a band scale, thus the warning of the root for categories stays.
+- The library sets no color. The stroke between the slices in the
+  `forced-colors` mode is in the CSS of the documentation, and the Arc page
+  tells the reason for it.
+- Sizes from `pnpm size`, gzip, without the Svelte runtime:
+
+  | Chart                                                     | Before   | After    |
+  | --------------------------------------------------------- | -------- | -------- |
+  | A line with the keyboard operation                        | 5.59 kB  | 5.65 kB  |
+  | Stacked bars on a band scale, axes and grid               | 8.56 kB  | 8.61 kB  |
+  | A line on a time scale, two axes and a grid               | 7.80 kB  | 7.86 kB  |
+  | Stacked areas, axes, grid, legend, tooltip and data table | 11.07 kB | 11.26 kB |
+  | A scatter plot with two axes, a grid and a legend         | 7.65 kB  | 7.80 kB  |
+  | A donut with a legend and a data table                    | —        | 8.42 kB  |
+
+  Each change to an existing part is smaller than 0.2 kB: the root adds
+  0.06 kB, the legend 0.09 kB and the data table 0.04 kB. A chart with all of
+  them adds 0.19 kB.
+
+### Screen reader test
+
+The test used NVDA 2026.2 with Chrome on Windows, with real key presses on
+the demo of the docs page: `Tab` into the chart, then `ArrowRight`,
+`ArrowRight`, `ArrowDown`, `ArrowUp`, `End`, `ArrowDown`, `Home` and `Enter`.
+Each key moved the focus to the expected slice, and NVDA read:
+
+| Key          | NVDA reads                                                                             |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `Tab`        | "Energy of the city by source in 2025, chart, Solar, Energy (GWh) 412, 37.9%, graphic" |
+| `ArrowRight` | "Wind, Energy (GWh) 296, 27.2%, graphic"                                               |
+| `ArrowRight` | "Hydro, Energy (GWh) 231, 21.3%, graphic"                                              |
+| `ArrowDown`  | "Gas, Energy (GWh) 148, 13.6%, graphic"                                                |
+| `ArrowUp`    | "Hydro, Energy (GWh) 231, 21.3%, graphic"                                              |
+| `End`        | "Gas, Energy (GWh) 148, 13.6%, graphic"                                                |
+| `ArrowDown`  | Nothing. The focus stays on the last slice, because the keys do not wrap.              |
+| `Home`       | "Solar, Energy (GWh) 412, 37.9%, graphic"                                              |
+| `Enter`      | "current"                                                                              |
+
+The series has no name, thus NVDA does not read a group.
+
 ## Open questions
 
 1. **The name of the part.** Decided: `Chart.Arc`. A mark has the name of its
@@ -235,5 +285,6 @@ A new fixture, "a donut with a legend and a data table", goes into
    order of the slices, and labels in the slices on request. The candidate
    is labels by default. A label does not fit in a small slice, and labels out
    of the circle need a layout that costs bytes.
-5. **The vertical arrows.** Decided for the prototype: they move in the
-   series. The NVDA test confirms it, or this RFC changes.
+5. **The vertical arrows.** Decided: they move in the series. In the NVDA
+   test, `ArrowDown` and `ArrowUp` moved the focus to the next and the
+   previous slice, and NVDA read each slice.

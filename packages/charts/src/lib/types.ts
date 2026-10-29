@@ -191,6 +191,28 @@ export type ChartDotProps<T> = ChartMarkData<T> & {
 	class?: string;
 };
 
+export type ChartArcProps<T> = ChartMarkData<T> & {
+	/**
+	 * The name of the series of this mark, when it has no series channel. The names of the slices
+	 * and the data table show it. The mark draws only the first series.
+	 */
+	name?: string;
+	/**
+	 * The radius of the hole, as a fraction of the radius of the circle. The default is 0: a pie
+	 * chart. A value of 0.6 makes a donut chart.
+	 */
+	inner?: number;
+	/**
+	 * Shows a text in the middle of each slice. `true` writes the value in the format of the y
+	 * channel; a function writes the text of each point. A text that is wider than its slice does
+	 * not show. The labels are hidden from assistive technology: the name of each slice already
+	 * has the value. The default is `false`.
+	 */
+	labels?: boolean | ((point: ChartPoint<T>) => string);
+	/** The CSS class names of the group of the mark. */
+	class?: string;
+};
+
 export type ChartAxisProps = {
 	/** The side of the plot. The default is `bottom`. `top` and `bottom` show the x scale. */
 	position?: 'top' | 'right' | 'bottom' | 'left';

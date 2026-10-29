@@ -56,20 +56,31 @@
 		}
 		// One series without a name has the name of the value channel as its column header.
 		const valueName = horizontal ? xName : yName;
+		// A mark of parts of a whole has one series, and a column with the share of each part. Its
+		// row holds the selection, as a row of one point does.
+		const share = ctx.marks[0]?.share;
 		return {
 			head: [
 				rowHeader ?? (horizontal ? yName : xName),
-				...[...columns.keys()].map((name) => name || valueName)
+				...[...columns.keys()].map((name) => name || valueName),
+				...(share ? ['%'] : [])
 			],
 			rows: [...keys]
 				.sort((a, b) => a - b)
-				.map((key): Row => ({
-					header: horizontal ? ctx.formatY(key) : ctx.formatX(key),
-					cells: [...columns.values()].map((cells) => {
-						const p = cells.get(key);
-						return [p ? (horizontal ? formatX(p) : formatY(p)) : '', p];
-					})
-				}))
+				.map((key): Row => {
+					const points = [...columns.values()].map((cells) => cells.get(key));
+					const cells = points.map((p): Cell => [
+						p ? (horizontal ? formatX(p) : formatY(p)) : '',
+						p
+					]);
+					const header = horizontal ? ctx.formatY(key) : ctx.formatX(key);
+					if (!share) return { header, cells };
+					return {
+						header,
+						point: points[0],
+						cells: [...cells, [points[0] ? share(points[0]) : '']]
+					};
+				})
 		};
 	});
 

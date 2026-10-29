@@ -39,7 +39,11 @@ The table is HTML, thus it goes in `Chart.Root` and not in `Chart.Plot`.
 
 For horizontal bars, the rows follow the categories on the y axis.
 
-A dot mark makes a table with one row for each dot, because two dots can have the same x value. The columns are the series, x and y, and the rows are in the order of the keyboard. No column identifies a row, thus the rows have no header cell. The first mark of the chart sets the form of the table.
+A dot mark makes a table with one row for each dot, because two dots can have the same x value. The columns are the series, x and y, and the rows are in the order of the keyboard. No column identifies a row, thus the rows have no header cell.
+
+An arc mark makes a table with one row for each slice, and a last column with the share of each slice. The header of that column is "%".
+
+The first mark of the chart sets the form of the table.
 
 The header of a column of values is the `xLabel` or the `yLabel` of the root. Without a label, it is the name of the field of the channel. Give `rowHeader` for a text of your own in the first column. A series without a name gets the name of the field of the value channel. A channel that is a function has no field name, thus its header is `x` or `y`.
 
@@ -56,7 +60,7 @@ Without `caption`, the table has `aria-labelledby` with the id of `Chart.Title`.
 
 ## Selection
 
-The cell of the selected point has `aria-current="true"` and `data-selected`. In a table with a row for each dot, the row of the selected dot has them. Select a point in the demo with `Enter`, and look at the table. In version 1, a click on the table does not change the selection.
+The cell of the selected point has `aria-current="true"` and `data-selected`. In a table with a row for each dot or each slice, the row of the selected point has them. Select a point in the demo with `Enter`, and look at the table. In version 1, a click on the table does not change the selection.
 
 ## Styles
 

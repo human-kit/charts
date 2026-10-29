@@ -103,7 +103,7 @@
 				},
 				{
 					"name": "data-point",
-					"description": "On each point: a circle, a rect for a bar, or a path for a dot."
+					"description": "On each point: a circle, a rect for a bar, or a path for a dot or a slice."
 				},
 				{
 					"name": "data-focused",

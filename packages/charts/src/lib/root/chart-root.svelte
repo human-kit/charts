@@ -85,8 +85,9 @@
 		const out: ChartEntry[] = [];
 		for (const [mark, m] of marks) {
 			const horizontal = m.horizontal?.() ?? false;
+			const share = !!m.share;
 			m.read().forEach((s, index) => {
-				if (s.points.length) out.push({ mark, series: index, points: s.points, horizontal });
+				if (s.points.length) out.push({ mark, series: index, points: s.points, horizontal, share });
 			});
 		}
 		// The keyboard goes through the series in the order of the legend: the series of the same
@@ -286,6 +287,8 @@
 		const horizontal = mark?.horizontal?.() ?? false;
 		const parts = [horizontal ? yText : xText, horizontal ? xText : yText];
 		if (point.series) parts.splice(mark?.list ? 0 : 1, 0, point.series);
+		const share = mark?.share?.(point);
+		if (share) parts.push(share);
 		return parts.join(', ');
 	}
 
@@ -365,7 +368,8 @@
 		});
 	});
 
-	// On a mark with its categories on the y axis, the vertical arrows move in the series.
+	// On a mark with its categories on the y axis, the vertical arrows move in the series. On a
+	// mark of parts of a whole, all of the arrows do, because it has one series.
 	const TURN: Record<string, string> = {
 		ArrowDown: 'ArrowRight',
 		ArrowUp: 'ArrowLeft',
@@ -383,8 +387,14 @@
 				return;
 			}
 			const position = positions.get(id)!;
-			const horizontal = entries[position.series].horizontal;
-			const next = move(places, position, horizontal ? (TURN[event.key] ?? event.key) : event.key);
+			const { horizontal, share } = entries[position.series];
+			const key = event.key;
+			const vertical = key === 'ArrowDown' || key === 'ArrowUp';
+			const next = move(
+				places,
+				position,
+				(share ? vertical : horizontal) ? (TURN[key] ?? key) : key
+			);
 			if (!next) return;
 			event.preventDefault();
 			const entry = entries[next.series];
@@ -484,6 +494,9 @@
 		},
 		get yLabel() {
 			return yLabel;
+		},
+		get locale() {
+			return locale;
 		},
 		toX,
 		toY,

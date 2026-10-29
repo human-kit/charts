@@ -33,6 +33,8 @@ The legend is HTML, thus it goes in `Chart.Root` and not in `Chart.Plot`. It mak
 
 A chart with one series that has no name has no legend. The legend then makes nothing.
 
+An arc mark gives its categories, not its series. The legend then has one item for each slice, in the order of the slices, and each item gets `data-category` in place of `data-series`.
+
 ## Content of your own
 
 Give `children` to replace the content of an item. The snippet receives the name and the index of the series, and the shape of its dots when a dot mark shows the series.

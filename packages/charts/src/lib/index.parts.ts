@@ -5,6 +5,7 @@ export { default as Line } from './line/chart-line.svelte';
 export { default as Bar } from './bar/chart-bar.svelte';
 export { default as Area } from './area/chart-area.svelte';
 export { default as Dot } from './dot/chart-dot.svelte';
+export { default as Arc } from './arc/chart-arc.svelte';
 export { default as Legend } from './legend/chart-legend.svelte';
 export { default as DataTable } from './data-table/chart-data-table.svelte';
 export { default as Tooltip } from './tooltip/chart-tooltip.svelte';

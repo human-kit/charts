@@ -55,6 +55,29 @@
 	color: var(--series);
 }
 
+/* A slice gets the color of its place, as the legend item of its category does. */
+.demo-chart [data-mark='arc'] [data-point]:nth-child(4n + 1) {
+	color: var(--chart-1);
+}
+.demo-chart [data-mark='arc'] [data-point]:nth-child(4n + 2) {
+	color: var(--chart-2);
+}
+.demo-chart [data-mark='arc'] [data-point]:nth-child(4n + 3) {
+	color: var(--chart-3);
+}
+.demo-chart [data-mark='arc'] [data-point]:nth-child(4n + 4) {
+	color: var(--chart-4);
+}
+.demo-chart [data-mark='arc'] [data-point]:not([data-focus-visible], [data-selected]) {
+	stroke: var(--background);
+	stroke-width: 1.5;
+}
+
+.demo-chart [data-arc-label] {
+	fill: var(--background);
+	font-weight: 600;
+}
+
 .demo-chart [data-grid] {
 	color: var(--border);
 }
@@ -199,6 +222,13 @@
 	}
 	.demo-chart [data-swatch] {
 		background: CanvasText;
+	}
+	.demo-chart [data-mark='arc'] [data-point] {
+		color: CanvasText;
+		stroke: Canvas;
+	}
+	.demo-chart [data-arc-label] {
+		fill: Canvas;
 	}
 	.demo-chart [data-point][data-focus-visible] {
 		stroke: Highlight;

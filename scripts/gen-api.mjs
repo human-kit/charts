@@ -27,7 +27,7 @@ const sources = ['types.ts', 'root/context.ts', 'scales/types.ts'].map((file) =>
 
 /** The attributes that each point of a mark gets from the root. */
 const POINT = [
-	['data-point', 'On each point: a circle, a rect for a bar, or a path for a dot.'],
+	['data-point', 'On each point: a circle, a rect for a bar, or a path for a dot or a slice.'],
 	['data-focused', 'On the point that has the focus.'],
 	['data-focus-visible', 'On the focused point, when the focus came from the keyboard.'],
 	['data-selected', 'On the selected point. The point also has `aria-current="true"`.']
@@ -136,6 +136,23 @@ const PAGES = {
 			]
 		}
 	],
+	arc: [
+		{
+			name: 'Arc',
+			type: 'ChartArcProps',
+			file: 'arc/chart-arc.svelte',
+			description:
+				'An arc mark for pie and donut charts. It makes one `<path>` per row, a slice of a circle.',
+			dataAttributes: [
+				['data-mark', 'On the group of the mark. The value is `arc`.'],
+				['data-series', 'On the group of the series. The value is the name of the series.'],
+				['data-category', 'On each slice and each label. The value is the x value of the row.'],
+				['data-arc-labels', 'On the group of the labels.'],
+				['data-arc-label', 'On each label.'],
+				...POINT
+			]
+		}
+	],
 	'axis-and-grid': [
 		{
 			name: 'Axis',
@@ -167,7 +184,11 @@ const PAGES = {
 			dataAttributes: [
 				['data-legend', 'On the list.'],
 				['data-legend-item', 'On each item.'],
-				['data-series', 'On each item. The value is the name of the series.'],
+				['data-series', 'On each item of a series. The value is the name of the series.'],
+				[
+					'data-category',
+					'On each item of an arc mark, in place of `data-series`. The value is the category.'
+				],
 				[
 					'data-symbol',
 					'On each item of a series with a shape. The value is the name of the shape.'
@@ -213,7 +234,10 @@ const PAGES = {
 			dataAttributes: [
 				['data-data-table', 'On the table.'],
 				['data-visibility', 'On the table: `visible` or `screen-reader`.'],
-				['data-selected', 'On the cell of the selected point.']
+				[
+					'data-selected',
+					'On the cell of the selected point, or on the row of a selected dot or slice.'
+				]
 			]
 		}
 	],
