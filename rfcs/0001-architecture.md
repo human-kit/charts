@@ -160,15 +160,15 @@ subpath and give it as `type`:
 | `band`   | `@human-kit/charts/scales/band`   | `string` (categories) |
 
 The root does not choose the scale from the values. A choice from the values
-puts all of the scales in each bundle, also in a chart without dates: the time
+puts all of the scales in each bundle, also in a chart without dates. The time
 scale adds about 0.9 kB gzip. In a development build, the root writes a warning
-when the x values are dates and the x scale is not a time scale, or when they are
-strings and the x scale is not a band scale.
+when the x values are dates and the x scale is not a time scale. It also writes a
+warning when the x values are strings and the x scale is not a band scale.
 
 The y scale includes zero by default (`zero: true`), and a bar needs it. Give
 `yScale={{ zero: false }}` for a line that must fill the plot. The rule is
-on the scale and not on the mark, because a server cannot see a mark that is
-after a guide (see "Size and rendering on a server").
+on the scale and not on the mark. The reason is that a server cannot see a mark
+that is after a guide (see "Size and rendering on a server").
 
 A band scale gives one band per category, in the order of the first appearance
 in the data. The scale gives the middle of a band, and `bandwidth` gives its
@@ -185,8 +185,8 @@ days, hours, minutes and seconds). It makes its labels with
 - A tick label shows only the largest calendar field that changes at the tick:
   "2020", "Mar", "Mar 5", "9:00 AM".
 - The name of a point shows the value in full. A time scale chooses the
-  precision from the data: dates that are all on the first of January show as
-  "2015", and dates in the middle of a month show as "Feb 3, 2015".
+  precision from the data. Dates that are all on the first of January show as
+  "2015". Dates in the middle of a month show as "Feb 3, 2015".
 - `xFormat` and `yFormat` replace the format of the names and of the ticks.
   They are the options of `Intl.NumberFormat` or `Intl.DateTimeFormat`, or a
   function that receives the number or the date and returns the text.
@@ -224,7 +224,7 @@ same information is in the names of the points and in the data table.
   `<figcaption>`.
 - The SVG of `Chart.Plot` has `role="application"`, the accessible name of
   the chart and `aria-roledescription="chart"`. The `application` role makes a
-  screen reader go into focus mode on a point, thus the arrow keys come to the
+  screen reader go into focus mode on a point. Thus, the arrow keys come to the
   chart (see "Screen reader test" below).
 - Each series is a group with the name of the series.
 - Each point is an element with an accessible name that has all of its values,
@@ -250,10 +250,10 @@ With `application`, NVDA reads "Downloads per year, chart, Core, grouping,
 must know the NVDA command that changes to focus mode.
 
 The `application` role removes the browse mode in the plot only. The title, the
-legend and the data table stay in browse mode, and the data table gives each
+legend and the data table stay in browse mode. The data table gives each
 value in a table that the user can read cell by cell.
 
-A second test used JAWS 2026 with Chrome on Windows, with the same real key
+A second test used JAWS 2026 with Chrome on Windows. It used the same real key
 presses on the line demo and the final roles (`application` and `img`). The
 arrow keys come to the chart, and JAWS reads each point:
 
@@ -296,10 +296,10 @@ right. Thus the order of the legend is also the order of the stack.
 The horizontal arrows follow the direction of the x axis on the screen, not the
 text direction. A chart does not reverse its x axis in a right-to-left page.
 
-For a mark with its categories on the y axis (horizontal bars), the vertical
-arrows move in the series and the horizontal arrows move between the series.
-The name of a point, a row of the data table and the tooltip start with the
-category.
+A mark can have its categories on the y axis (horizontal bars). For that mark,
+the vertical arrows move in the series and the horizontal arrows move between
+the series. The name of a point, a row of the data table and the tooltip start
+with the category.
 
 ### Selection
 
@@ -421,10 +421,11 @@ The prototype answers the open questions before the full implementation:
 
 Steps 1 and 2 are complete (2026-10-09).
 
-- `Chart.Root`, `Chart.Title`, `Chart.Plot`, `Chart.Line`, `Chart.Area`,
-  `Chart.Bar` (vertical and horizontal, grouped and stacked), `Chart.Axis`, `Chart.Grid`,
-  `Chart.Legend`, `Chart.Tooltip`, `Chart.DataTable`, and the linear, time and
-  band scales are in `packages/charts`.
+- `Chart.Root`, `Chart.Title`, `Chart.Plot`, `Chart.Line`, `Chart.Area` and
+  `Chart.Bar` are in `packages/charts`. `Chart.Bar` has vertical and horizontal
+  bars, grouped and stacked. `Chart.Axis`, `Chart.Grid`, `Chart.Legend`,
+  `Chart.Tooltip`, `Chart.DataTable`, and the linear, time and band scales are
+  also in `packages/charts`.
 - Each part holds its own logic. The legend, the tooltip and the data table
   read the marks through the context, thus a chart without them does not
   include their code.
@@ -470,21 +471,22 @@ Steps 1 and 2 are complete (2026-10-09).
    field of the root rows, give the rows to the mark again:
    `<Chart.Line data={sales} y="cost" />`.
 3. **The order of the series for `ArrowUp` and `ArrowDown`.** Decided: the
-   order of the legend. The candidates were the order of the legend, which does
-   not change, and the order on the screen at the focused x value, which
-   follows the lines. A user who cannot see the chart knows only the order of
-   the legend. When two marks show series with the same name, `ArrowDown` goes
-   from a series in one mark to the series with the same name in the next mark.
+   order of the legend. The candidates were the order of the legend and the
+   order on the screen at the focused x value. The order of the legend does not
+   change, and the order on the screen follows the lines. A user who cannot see
+   the chart knows only the order of the legend. Two marks can show series with
+   the same name. Then `ArrowDown` goes from a series in one mark to the series
+   with the same name in the next mark.
 4. **The keyboard model for a bar chart.** Decided: the same model as for a
-   line. The arrows along the axis of the categories move in a series, and the
+   line. The arrows along the axis of the categories move in a series. The
    other arrows move between the series, in the order of the legend. A stack
-   puts its series in that order on the screen: on a vertical stack, the
+   puts its series in that order on the screen. On a vertical stack, the
    first series is on the top, thus `ArrowDown` goes down on the screen. On a
    horizontal stack, the first series is next to zero, thus `ArrowRight` goes
    to the right. Before, the first series was at the bottom of a vertical
    stack, and `ArrowDown` went up. In a grouped layout, `ArrowDown` goes to the
    next bar of the group, which is on its right. The name of the bar gives the
-   series, and the other candidate, the order of the screen, makes a bar chart
+   series. The other candidate, the order of the screen, makes a bar chart
    different from a line chart.
 5. **The default width on the server.** Decided: 640 pixels in the `viewBox`,
    and `width="100%"` on the SVG until the first measure. A fixed width of 640

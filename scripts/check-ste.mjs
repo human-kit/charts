@@ -155,8 +155,8 @@ function checkProse(file, label, prose, source = prose) {
  * sentence above and every length reading after that is fiction.
  *
  * Dropped on the way: the frontmatter (it is the meta description, and it is
- * deliberately not STE), fenced code, tables (cells are fragments), headings
- * (noun phrases), and component tags. An inline code span becomes one word.
+ * deliberately not STE), fenced code, tables (cells are fragments, also when a
+ * list item indents them), headings (noun phrases), and component tags. An inline code span becomes one word.
  */
 function markdownBlocks(source, { mask = true } = {}) {
 	let cleaned = source
@@ -164,7 +164,8 @@ function markdownBlocks(source, { mask = true } = {}) {
 		.replace(/^---\n[\s\S]*?\n---\n/, '')
 		.replace(/```[\s\S]*?```/g, '')
 		.replace(/<script[\s\S]*?<\/script>/g, '')
-		.replace(/^\|.*\|$/gm, '');
+		// A table in a list item is indented, and it is still a table.
+		.replace(/^[ \t]*\|.*\|[ \t]*$/gm, '');
 	// An inline code span is one term, and masking it keeps `min`/`max` from
 	// counting as three words. Off for the copy that goes in the message.
 	if (mask) cleaned = cleaned.replace(/`[^`\n]*`/g, 'X');
@@ -221,6 +222,16 @@ if (existsSync(libDir)) {
 	for (const path of partReadmes(libDir)) {
 		const label = path.slice(resolve(root).length + 1).replace(/\\/g, '/');
 		checkMarkdown(label, readFileSync(path, 'utf8'));
+	}
+}
+
+// The RFCs. They are design records, but they are still prose that a reader
+// reads, so the same rules apply.
+const rfcDir = resolve(root, 'rfcs');
+if (existsSync(rfcDir)) {
+	const rfcs = readdirSync(rfcDir).filter((name) => name.endsWith('.md'));
+	for (const name of rfcs.sort()) {
+		checkMarkdown(`rfcs/${name}`, readFileSync(join(rfcDir, name), 'utf8'));
 	}
 }
 
