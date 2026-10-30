@@ -123,6 +123,7 @@ tooltip, data table) go next to it, because HTML cannot be in an SVG.
 | `data: T[]`                     | The rows. Each mark uses them when it has no `data` of its own.                      |
 | `x`, `y`                        | The channels of the two axes: a field name of `T`, or a function of the row.         |
 | `series`                        | The channel that divides the rows into series. Without it, the chart has one series. |
+| `key`                           | The channel that identifies a row. Without it, the row index is the key.             |
 | `xScale`, `yScale`              | The type, the domain and the rounding of the scale of each axis (see below).         |
 | `width`, `height`               | The size in pixels. Without `width`, the chart follows the width of its container.   |
 | `margin`                        | The space around the plot. Without it, the root measures the axis labels.            |
@@ -307,8 +308,8 @@ with the category.
   selection. `bind:selected` holds the point.
 - The selected point has `aria-current="true"` and `data-selected`. Its cell
   in `Chart.DataTable` has the same attributes.
-- The selection follows the row index and the series of the point, not the
-  identity of the row. A parent that holds `selected` in a `$state` gets a
+- The selection follows the key and the series of the point, not the
+  identity of the row. Without a `key` channel, the key is the row index. A parent that holds `selected` in a `$state` gets a
   proxy of the row, and a proxy is not equal to the row.
 - In version 1, the table does not change the selection: it shows it.
 
