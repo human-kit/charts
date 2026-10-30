@@ -23,6 +23,7 @@
 		bar: 'bar',
 		dot: 'dot',
 		arc: 'arc',
+		rule: 'rule',
 		'axis-and-grid': 'axis',
 		legend: 'legend',
 		tooltip: 'tooltip',
