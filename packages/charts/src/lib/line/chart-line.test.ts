@@ -179,4 +179,85 @@ describe('Chart.Line', () => {
 			['2', '70', '42']
 		]);
 	});
+
+	it('keeps the focus and the selection on the same row when rows move', async () => {
+		const data = [
+			{ x: 1, y: 10, s: 'A' },
+			{ x: 2, y: 20, s: 'A' },
+			{ x: 3, y: 15, s: 'A' }
+		];
+		const { rerender } = render(LineTest, { data, key: 'x' });
+		points()[1].focus();
+		await userEvent.keyboard('{Enter}');
+		const focusedPoint = points()[1];
+		const name = () => document.activeElement?.getAttribute('aria-label');
+		const current = () => points().map((p) => p.getAttribute('aria-current'));
+
+		// A row before the focused row.
+		await rerender({ key: 'x', data: [{ x: 0, y: 5, s: 'A' }, ...data] });
+		expect(document.activeElement).toBe(focusedPoint);
+		expect(name()).toBe('2, A, 20');
+		expect(focusedPoint.dataset.focused).toBe('true');
+		expect(points()[2].getAttribute('tabindex')).toBe('0');
+		expect(current()).toEqual([null, null, 'true', null]);
+		expect(focusedText()).toBe('A:2');
+
+		// The rows in the opposite order.
+		await rerender({ key: 'x', data: [...data].reverse() });
+		expect(name()).toBe('2, A, 20');
+		expect(document.activeElement?.getAttribute('data-focused')).toBe('true');
+		expect(current()).toEqual([null, 'true', null]);
+
+		// A row before the focused row goes out of the data.
+		await rerender({ key: 'x', data: data.slice(1) });
+		expect(name()).toBe('2, A, 20');
+		expect(current()).toEqual(['true', null]);
+
+		await userEvent.keyboard('{ArrowRight}');
+		expect(name()).toBe('3, A, 15');
+	});
+
+	it('keeps the focus on the same row index without a key channel', async () => {
+		const data = [
+			{ x: 1, y: 10, s: 'A' },
+			{ x: 2, y: 20, s: 'A' }
+		];
+		const { rerender } = render(LineTest, { data });
+		points()[1].focus();
+
+		await rerender({ data: [{ x: 0, y: 5, s: 'A' }, ...data] });
+		expect(document.activeElement?.getAttribute('aria-label')).toBe('1, A, 10');
+	});
+
+	it('moves the focus to the same index when the focused row goes out of the data', async () => {
+		const data = [
+			{ x: 1, y: 10, s: 'A' },
+			{ x: 2, y: 20, s: 'A' },
+			{ x: 3, y: 15, s: 'A' }
+		];
+		const { rerender } = render(LineTest, { data, key: 'x' });
+		points()[1].focus();
+
+		await rerender({ key: 'x', data: [data[0], data[2]] });
+		expect(document.activeElement?.getAttribute('aria-label')).toBe('3, A, 15');
+		expect(focusedText()).toBe('A:3');
+
+		await rerender({ key: 'x', data: [data[0]] });
+		expect(document.activeElement?.getAttribute('aria-label')).toBe('1, A, 10');
+	});
+
+	it('does not move the focus into the chart on a data update', async () => {
+		const data = [
+			{ x: 1, y: 10, s: 'A' },
+			{ x: 2, y: 20, s: 'A' }
+		];
+		const { rerender } = render(LineTest, { data, key: 'x' });
+		points()[1].focus();
+		(document.querySelector('[data-testid="after"]') as HTMLElement).focus();
+
+		await rerender({ key: 'x', data: [{ x: 0, y: 5, s: 'A' }, ...data] });
+		expect(document.activeElement).toBe(document.querySelector('[data-testid="after"]'));
+		// The tab stop stays on the last focused row.
+		expect(points().map((p) => p.getAttribute('tabindex'))).toEqual(['-1', '-1', '0']);
+	});
 });

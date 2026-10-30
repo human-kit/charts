@@ -34,6 +34,13 @@
 					"description": "The series channel of this mark. It needs `data`. Without it, the mark uses the channel of the root."
 				},
 				{
+					"name": "key",
+					"type": "Channel<T, ChartValue>",
+					"required": false,
+					"default": null,
+					"description": "The key channel of this mark. It needs `data`. Without it, the mark uses the channel of the root."
+				},
+				{
 					"name": "name",
 					"type": "string",
 					"required": false,

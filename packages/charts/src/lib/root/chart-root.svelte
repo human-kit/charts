@@ -28,6 +28,7 @@
 		x,
 		y,
 		series,
+		key,
 		xScale: xScaleOptions,
 		yScale: yScaleOptions,
 		width: widthProp,
@@ -314,12 +315,12 @@
 	}
 
 	/**
-	 * Whether the point is the selected point: the same row index and series. The test does not use
-	 * the identity of the row, because a parent that holds `selected` in a `$state` gets a proxy of
-	 * it, and a proxy is not equal to its row.
+	 * Whether the point is the selected point: the same key and series. The test does not use the
+	 * identity of the row, because a parent that holds `selected` in a `$state` gets a proxy of it,
+	 * and a proxy is not equal to its row.
 	 */
 	function isSelected(point: ChartPoint) {
-		return !!selected && selected.index === point.index && selected.series === point.series;
+		return !!selected && selected.key === point.key && selected.series === point.series;
 	}
 
 	function targetId(event: Event) {
@@ -359,6 +360,32 @@
 		selected = isSelected(point) ? null : point;
 		onSelect?.(point);
 	}
+
+	// A mark keeps the element of a point by its key, but the id of a point is its place. Thus
+	// after a data update, the root finds the element of the tab stop again and reads its new id.
+	// A move of the focused element moves the focus to the body, thus the root gives it back. When
+	// the element is not in the data, the tab stop goes to the same place, or to the first point.
+	let tab: Element | null = null;
+	let hadFocus = false;
+	$effect.pre(() => {
+		void entries;
+		untrack(() => {
+			tab = activeId ? document.getElementById(activeId) : null;
+			hadFocus = !!focusedId;
+		});
+	});
+	$effect(() => {
+		void entries;
+		const element = tab && (document.getElementById(tab.id) ?? document.getElementById(tabStopId!));
+		tab = null;
+		if (!element) return;
+		activeId = element.id;
+		if (hadFocus) {
+			focusedId = element.id;
+			focused = pointAt(element.id) as ChartPoint<T> | null;
+			(element as HTMLElement).focus();
+		}
+	});
 
 	$effect(() => {
 		if (!focusedId) return;
@@ -445,6 +472,9 @@
 		},
 		get series() {
 			return series;
+		},
+		get key() {
+			return key;
 		},
 		get width() {
 			return width;

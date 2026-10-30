@@ -47,7 +47,7 @@ description: Chart.Root, Chart.Title and Chart.Plot — the data, the typed chan
 
 Give the rows in `data`. A mark uses them when it has no `data` of its own.
 
-`x`, `y` and `series` are channels. A channel is the name of a field of the row, or a function of the row and its index. The field names are typed: `x="month"` is a type error when the row has no `month` field.
+`x`, `y`, `series` and `key` are channels. A channel is the name of a field of the row, or a function of the row and its index. The field names are typed: `x="month"` is a type error when the row has no `month` field.
 
 A value of a channel is a number, a `Date`, or a string. A string is a category of a band scale.
 
@@ -99,9 +99,25 @@ You can give `margin` for some sides only, for example `margin={{ left: 48 }}`.
 - `bind:selected` holds the selected point, or `null`. `Enter`, `Space` or a click selects a point, and a second time clears the selection. A click or a tap less than 40 pixels from a point also selects it.
 - `onSelect` receives the point that the user activated.
 
-A point is a `ChartPoint`. It has the row (`datum`) and the index of the row in the data of its mark. It also has the name of the series, and the x and y values. The row has the type of your data.
+A point is a `ChartPoint`. It has the row (`datum`), the index of the row in the data of its mark, and the key of the row. It also has the name of the series, and the x and y values. The row has the type of your data.
 
-The selection follows the row index and the series of the point, not the identity of the row. Thus a `selected` value that you hold in a `$state` stays correct, although the state holds a proxy of the row.
+The selection follows the key and the series of the point, not the identity of the row. Thus a `selected` value that you hold in a `$state` stays correct, although the state holds a proxy of the row.
+
+## Keys
+
+The `key` channel identifies a row in its series when the data changes. Give a value that is unique in each series, for example a date or an id. A date is its time.
+
+```svelte
+<Chart.Root data={rows} x="month" y="visits" series="site" key="month">
+```
+
+With a key, the focus and the selection stay on the same row when you add, remove or sort rows. When the focused row is not in the new data, the focus goes to the point at the same place in the series. When there is no point at that place, the focus goes to the first point of the chart.
+
+Without `key`, the key is the row index. Then the focus and the selection stay at the same index, and they can go to a different row.
+
+When two rows of a series have the same key, the series uses the row index as the key. A development build writes a warning.
+
+A mark with its own `data` can have its own `key`, as it can have its own `x` and `y`.
 
 ## Accessible name
 

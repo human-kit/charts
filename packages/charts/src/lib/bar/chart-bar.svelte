@@ -18,6 +18,7 @@
 		x,
 		y,
 		series,
+		key,
 		name,
 		layout = 'grouped',
 		groupPadding = 0.1,
@@ -34,7 +35,8 @@
 			(x ?? ctx.x) as Channel<T, ChartValue> | undefined,
 			(y ?? ctx.y) as Channel<T, ChartValue> | undefined,
 			(series ?? ctx.series) as Channel<T, string> | undefined,
-			name
+			name,
+			(key ?? ctx.key) as Channel<T, ChartValue> | undefined
 		)
 	);
 
@@ -230,7 +232,7 @@
 >
 	{#each groups as s, si (s.name)}
 		<g role="group" aria-label={s.name || undefined} data-series={s.name || undefined}>
-			{#each s.points as p, i (i)}
+			{#each s.points as p, i (p.key)}
 				{#if rounded}
 					<path
 						d={barPath(rect(si, i, p), p)}

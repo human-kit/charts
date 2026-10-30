@@ -17,6 +17,7 @@
 		x,
 		y,
 		series,
+		key,
 		name,
 		r = 4,
 		symbol = 'auto',
@@ -33,7 +34,8 @@
 			(x ?? ctx.x) as Channel<T, ChartValue> | undefined,
 			(y ?? ctx.y) as Channel<T, ChartValue> | undefined,
 			(series ?? ctx.series) as Channel<T, string> | undefined,
-			name
+			name,
+			(key ?? ctx.key) as Channel<T, ChartValue> | undefined
 		);
 		for (const s of out) {
 			s.points.sort((a, b) => ctx.toX(a.x) - ctx.toX(b.x) || ctx.toY(a.y) - ctx.toY(b.y));
@@ -76,7 +78,7 @@
 			data-series={s.name || undefined}
 			data-symbol={shape}
 		>
-			{#each s.points as p, i (i)}
+			{#each s.points as p, i (p.key)}
 				{@const [px, py] = at(p)}
 				<path
 					{d}
