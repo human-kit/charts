@@ -17,6 +17,7 @@
 		x,
 		y,
 		series,
+		key,
 		name,
 		stacked = false,
 		r = 0,
@@ -32,7 +33,8 @@
 			(x ?? ctx.x) as Channel<T, ChartValue> | undefined,
 			(y ?? ctx.y) as Channel<T, ChartValue> | undefined,
 			(series ?? ctx.series) as Channel<T, string> | undefined,
-			name
+			name,
+			(key ?? ctx.key) as Channel<T, ChartValue> | undefined
 		)
 	);
 
@@ -87,7 +89,7 @@
 				aria-hidden="true"
 				data-line=""
 			/>
-			{#each s.points as p, i (i)}
+			{#each s.points as p, i (p.key)}
 				{@const attributes = ctx.point(registration.id, si, i, p as ChartPoint)}
 				<!-- A point is hidden by default, and it grows when it has the focus. -->
 				<circle

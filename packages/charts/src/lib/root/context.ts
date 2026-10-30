@@ -12,6 +12,11 @@ export type ChartPoint<T = unknown> = {
 	datum: T;
 	/** The index of the row in the data of its mark. */
 	index: number;
+	/**
+	 * The value that identifies the point in its series across updates, from the `key` channel. A
+	 * date is its time.
+	 */
+	key: string | number;
 	/** The name of the series. It is empty when the chart has one series. */
 	series: string;
 	/** The value of the x channel. */
@@ -131,6 +136,7 @@ export type ChartContext = {
 	readonly x: Channel<any, ChartValue> | undefined;
 	readonly y: Channel<any, ChartValue> | undefined;
 	readonly series: Channel<any, string> | undefined;
+	readonly key: Channel<any, ChartValue> | undefined;
 	/** The name of the x channel for a user, for example "Weight (lb)", or `undefined`. */
 	readonly xLabel: string | undefined;
 	/** The name of the y channel for a user, or `undefined`. */

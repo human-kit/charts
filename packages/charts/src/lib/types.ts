@@ -64,6 +64,13 @@ export type ChartRootProps<T> = {
 	y?: Channel<T, ChartValue>;
 	/** The channel that divides the rows into series. Without it, the chart has one series. */
 	series?: Channel<T, string>;
+	/**
+	 * The channel that identifies a row in its series across data updates, for example a date or
+	 * an id. Then the focus and the selection stay on the same row when the rows move. Without it,
+	 * the key is the row index. When two rows of a series have the same key, that series uses the
+	 * row index.
+	 */
+	key?: Channel<T, ChartValue>;
 	/** The x scale. */
 	xScale?: ScaleOptions;
 	/** The y scale. */
@@ -83,7 +90,7 @@ export type ChartRootProps<T> = {
 	 * The selected point, or `null`. You can bind it with `bind:selected`. `Enter`, `Space` or a
 	 * click selects a point, and a second time clears the selection. The selected point has
 	 * `aria-current="true"` and `data-selected`, and so has its cell in `Chart.DataTable`. The
-	 * selection follows the row index and the series of the point.
+	 * selection follows the key and the series of the point.
 	 */
 	selected?: ChartPoint<T> | null;
 	/** The component calls it when the user activates a point with `Enter`, `Space` or a click. */
@@ -154,8 +161,10 @@ export type ChartMarkData<T> =
 			y?: Channel<T, ChartValue>;
 			/** The series channel of this mark. It needs `data`. Without it, the mark uses the channel of the root. */
 			series?: Channel<T, string>;
+			/** The key channel of this mark. It needs `data`. Without it, the mark uses the channel of the root. */
+			key?: Channel<T, ChartValue>;
 	  }
-	| { data?: undefined; x?: undefined; y?: undefined; series?: undefined };
+	| { data?: undefined; x?: undefined; y?: undefined; series?: undefined; key?: undefined };
 
 export type ChartLineProps<T> = ChartMarkData<T> & {
 	/**

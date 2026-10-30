@@ -57,6 +57,42 @@ describe('Chart.Dot', () => {
 		expect(document.activeElement).toBe(dots()[6]);
 	});
 
+	it('keeps the focus and the selection on the row of the key when rows move', async () => {
+		type Row = { w: number; v: number; s: string };
+		const data: Row[] = [
+			{ w: 1, v: 10, s: 'A' },
+			{ w: 2, v: 20, s: 'A' },
+			{ w: 3, v: 30, s: 'A' }
+		];
+		const key = (row: Row) => `${row.w}:${row.v}`;
+		const { rerender } = render(DotTest, { data, key });
+		dots()[1].focus();
+		await userEvent.keyboard('{Enter}');
+		const name = () => document.activeElement?.getAttribute('aria-label');
+		const current = () => dots().map((dot) => dot.getAttribute('aria-current'));
+
+		await rerender({ data: [data[2], { w: 0, v: 5, s: 'A' }, data[1], data[0]], key });
+		expect(name()).toBe('A, Weight 2, Speed 20');
+		expect(current()).toEqual([null, null, 'true', null]);
+
+		await rerender({ data: [data[1], data[2]], key });
+		expect(name()).toBe('A, Weight 2, Speed 20');
+		expect(current()).toEqual(['true', null]);
+	});
+
+	it('uses the row index as the key by default', async () => {
+		const data = [
+			{ w: 1, v: 10, s: 'A' },
+			{ w: 2, v: 20, s: 'A' }
+		];
+		const { rerender } = render(DotTest, { data });
+		dots()[0].focus();
+
+		// Two dots can have the same x value, thus the default key is the row index.
+		await rerender({ data: [data[1], data[0]] });
+		expect(document.activeElement?.getAttribute('aria-label')).toBe('A, Weight 2, Speed 20');
+	});
+
 	it('shows the label of the channel on an axis without a label', () => {
 		render(DotTest);
 		expect(texts('[data-axis-label]')).toEqual(['Weight']);

@@ -11,7 +11,7 @@
 	} from '../root/context.js';
 	import type { ChartLineProps } from '../types.js';
 
-	let { data, x, y, series, name, r = 3, class: className = '' }: ChartLineProps<T> = $props();
+	let { data, x, y, series, key, name, r = 3, class: className = '' }: ChartLineProps<T> = $props();
 
 	const ctx = useChartContext('Chart.Line');
 
@@ -21,7 +21,8 @@
 			(x ?? ctx.x) as Channel<T, ChartValue> | undefined,
 			(y ?? ctx.y) as Channel<T, ChartValue> | undefined,
 			(series ?? ctx.series) as Channel<T, string> | undefined,
-			name
+			name,
+			(key ?? ctx.key) as Channel<T, ChartValue> | undefined
 		)
 	);
 
@@ -56,7 +57,7 @@
 				aria-hidden="true"
 				data-line=""
 			/>
-			{#each s.points as p, i (i)}
+			{#each s.points as p, i (p.key)}
 				<circle
 					cx={round(at(p)[0])}
 					cy={round(at(p)[1])}

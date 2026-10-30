@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { areaPath, linePath } from './path.js';
 import { groupRows, isValue } from './series.js';
 
@@ -43,6 +43,35 @@ describe('groupRows', () => {
 			{ t: 4, v: null, s: 'a' }
 		];
 		expect(groupRows(edges, 't', 'v', 's')[0].breaks).toEqual([]);
+	});
+
+	it('uses the row index as the key without a key channel', () => {
+		const [a, b] = groupRows(rows, 't', 'v', 's');
+		expect(a.points.map((p) => p.key)).toEqual([0, 3, 4]);
+		expect(b.points.map((p) => p.key)).toEqual([2]);
+	});
+
+	it('reads the key channel, and uses the row index for a series with two equal keys', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const same: Row[] = [
+			{ t: 1, v: 1, s: 'a' },
+			{ t: 1, v: 2, s: 'a' },
+			{ t: 1, v: 3, s: 'b' }
+		];
+		const [a, b] = groupRows(same, 't', 'v', 's', '', (row) => row.v! * 10);
+		expect(a.points.map((p) => p.key)).toEqual([10, 20]);
+		expect(b.points.map((p) => p.key)).toEqual([30]);
+		expect(warn).not.toHaveBeenCalled();
+
+		const [c, d] = groupRows(same, 't', 'v', 's', '', 't');
+		expect(c.points.map((p) => p.key)).toEqual([0, 1]);
+		expect(d.points.map((p) => p.key)).toEqual([1]);
+		expect(warn).toHaveBeenCalledOnce();
+
+		// A date is its time, thus two equal dates are the same key.
+		const dates = [{ t: new Date(5), v: 1 }];
+		expect(groupRows(dates, 'v', 'v', undefined, '', 't')[0].points[0].key).toBe(5);
+		warn.mockRestore();
 	});
 });
 

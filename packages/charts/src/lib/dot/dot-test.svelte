@@ -1,6 +1,8 @@
 <script lang="ts">
 	import * as Chart from '../index.parts.js';
+	import type { Channel } from '../internal/channel.js';
 	import type { ChartSymbol } from '../internal/symbol.js';
+	import type { ChartValue } from '../root/context.js';
 
 	type Row = { w: number; v: number; s: string };
 
@@ -14,8 +16,9 @@
 			{ w: 2, v: 5, s: 'B' },
 			{ w: 1, v: 15, s: 'B' },
 			{ w: 4, v: 32, s: 'B' }
-		]
-	}: { symbol?: 'auto' | ChartSymbol; data?: Row[] } = $props();
+		],
+		key
+	}: { symbol?: 'auto' | ChartSymbol; data?: Row[]; key?: Channel<Row, ChartValue> } = $props();
 </script>
 
 <Chart.Root
@@ -24,6 +27,7 @@
 	x="w"
 	y="v"
 	series="s"
+	{key}
 	xLabel="Weight"
 	yLabel="Speed"
 	xScale={{ domain: [0, 4] }}

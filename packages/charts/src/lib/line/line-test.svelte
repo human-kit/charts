@@ -13,9 +13,11 @@
 			{ x: 3, y: 8, s: 'B' }
 		],
 		onSelect,
-		xFormat
+		xFormat,
+		key
 	}: {
 		data?: Row[];
+		key?: 'x';
 		onSelect?: (point: ChartPoint<Row>) => void;
 		xFormat?: (value: ChartValue) => string;
 	} = $props();
@@ -30,6 +32,7 @@
 	x="x"
 	y="y"
 	series="s"
+	{key}
 	width={400}
 	height={200}
 	bind:focused

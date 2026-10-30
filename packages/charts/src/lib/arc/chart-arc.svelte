@@ -17,6 +17,7 @@
 		x,
 		y,
 		series,
+		key,
 		name,
 		inner = 0,
 		labels = false,
@@ -32,7 +33,8 @@
 			(x ?? ctx.x) as Channel<T, ChartValue> | undefined,
 			(y ?? ctx.y) as Channel<T, ChartValue> | undefined,
 			(series ?? ctx.series) as Channel<T, string> | undefined,
-			name
+			name,
+			(key ?? ctx.key) as Channel<T, ChartValue> | undefined
 		).slice(0, 1);
 		for (const s of out) s.points = s.points.filter((p) => +p.y >= 0);
 		return out;
@@ -128,7 +130,7 @@
 <g class={className} data-mark="arc" transform="translate({round(cx)},{round(cy)})">
 	{#each groups as s, si (s.name)}
 		<g role="group" aria-label={s.name || undefined} data-series={s.name || undefined}>
-			{#each s.points as p, i (i)}
+			{#each s.points as p, i (p.key)}
 				<path
 					d={arcPath(r0, r1, angles[i][0], angles[i][1])}
 					fill="currentColor"

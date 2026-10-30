@@ -42,6 +42,13 @@
 					"description": "The channel that divides the rows into series. Without it, the chart has one series."
 				},
 				{
+					"name": "key",
+					"type": "Channel<T, ChartValue>",
+					"required": false,
+					"default": null,
+					"description": "The channel that identifies a row in its series across data updates, for example a date or\nan id. Then the focus and the selection stay on the same row when the rows move. Without it,\nthe key is the row index. When two rows of a series have the same key, that series uses the\nrow index."
+				},
+				{
 					"name": "xScale",
 					"type": "ScaleOptions",
 					"required": false,
@@ -88,7 +95,7 @@
 					"type": "ChartPoint<T> | null",
 					"required": false,
 					"default": "null",
-					"description": "The selected point, or `null`. You can bind it with `bind:selected`. `Enter`, `Space` or a\nclick selects a point, and a second time clears the selection. The selected point has\n`aria-current=\"true\"` and `data-selected`, and so has its cell in `Chart.DataTable`. The\nselection follows the row index and the series of the point."
+					"description": "The selected point, or `null`. You can bind it with `bind:selected`. `Enter`, `Space` or a\nclick selects a point, and a second time clears the selection. The selected point has\n`aria-current=\"true\"` and `data-selected`, and so has its cell in `Chart.DataTable`. The\nselection follows the key and the series of the point."
 				},
 				{
 					"name": "onSelect",
@@ -263,6 +270,13 @@
 					"required": true,
 					"default": null,
 					"description": "The index of the row in the data of its mark."
+				},
+				{
+					"name": "key",
+					"type": "string | number",
+					"required": true,
+					"default": null,
+					"description": "The value that identifies the point in its series across updates, from the `key` channel. A\ndate is its time."
 				},
 				{
 					"name": "series",
