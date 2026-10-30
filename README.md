@@ -48,13 +48,13 @@ of the CSS.
 
 ## Parts
 
-| Group  | Parts                                                             |
-| ------ | ----------------------------------------------------------------- |
-| Root   | `Chart.Root`, `Chart.Title`, `Chart.Plot`                         |
-| Marks  | `Chart.Line`, `Chart.Area`, `Chart.Bar`, `Chart.Dot`, `Chart.Arc` |
-| Guides | `Chart.Axis`, `Chart.Grid`, `Chart.Legend`                        |
-| Access | `Chart.Tooltip`, `Chart.DataTable`                                |
-| Scales | `scaleLinear`, `scaleTime`, `scaleBand` (one subpath for each)    |
+| Group  | Parts                                                                           |
+| ------ | ------------------------------------------------------------------------------- |
+| Root   | `Chart.Root`, `Chart.Title`, `Chart.Plot`                                       |
+| Marks  | `Chart.Line`, `Chart.Area`, `Chart.Bar`, `Chart.Dot`, `Chart.Arc`, `Chart.Rule` |
+| Guides | `Chart.Axis`, `Chart.Grid`, `Chart.Legend`                                      |
+| Access | `Chart.Tooltip`, `Chart.DataTable`                                              |
+| Scales | `scaleLinear`, `scaleTime`, `scaleBand` (one subpath for each)                  |
 
 ## Repository layout
 
