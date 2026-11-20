@@ -1,5 +1,15 @@
 # @human-kit/charts
 
+## 0.6.0
+
+### Minor Changes
+
+- [#45](https://github.com/human-kit/charts/pull/45) [`c6be59a`](https://github.com/human-kit/charts/commit/c6be59aaa6d8c4f37930ed9014cea07193575ebb) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - Add the `key` channel to `Chart.Root` and to each mark with its own `data`. The key identifies a row in its series when the data changes. With a key, the focus, the tab stop and the selection stay on the same row when you add, remove or sort rows. When the focused row is not in the new data, the focus goes to the point at the same place. Without `key`, the key is the row index, as before. Two rows of a series with the same key make that series use the row index, and a development build writes a warning. `ChartPoint` has the new `key` field, and the selection compares the key and the series.
+
+### Patch Changes
+
+- [#42](https://github.com/human-kit/charts/pull/42) [`c5efcb3`](https://github.com/human-kit/charts/commit/c5efcb3914a74d737304762342b78faf97cfe495) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - A point loses its focused state when the focus moves to another element in the plot. Then the tooltip of that point closes.
+
 ## 0.5.0
 
 ### Minor Changes
