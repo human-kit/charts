@@ -1,5 +1,9 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"framework": null,
+	"installCommand": "true",
+	"buildCommand": "mkdir -p public && echo \"Moved to https://ui.human-kit.com/docs/charts\" > public/index.html",
+	"outputDirectory": "public",
 	"redirects": [
 		{
 			"source": "/docs/quick-start.md",
