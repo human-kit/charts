@@ -1,0 +1,140 @@
+{
+	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"redirects": [
+		{
+			"source": "/docs/quick-start.md",
+			"destination": "https://ui.human-kit.com/docs/charts.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/quick-start",
+			"destination": "https://ui.human-kit.com/docs/charts",
+			"permanent": true
+		},
+		{
+			"source": "/docs/accessibility.md",
+			"destination": "https://ui.human-kit.com/docs/chart-accessibility.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/accessibility",
+			"destination": "https://ui.human-kit.com/docs/chart-accessibility",
+			"permanent": true
+		},
+		{
+			"source": "/docs/chart.md",
+			"destination": "https://ui.human-kit.com/docs/chart.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/chart",
+			"destination": "https://ui.human-kit.com/docs/chart",
+			"permanent": true
+		},
+		{
+			"source": "/docs/scales.md",
+			"destination": "https://ui.human-kit.com/docs/chart-scales.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/scales",
+			"destination": "https://ui.human-kit.com/docs/chart-scales",
+			"permanent": true
+		},
+		{
+			"source": "/docs/line.md",
+			"destination": "https://ui.human-kit.com/docs/chart-line.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/line",
+			"destination": "https://ui.human-kit.com/docs/chart-line",
+			"permanent": true
+		},
+		{
+			"source": "/docs/area.md",
+			"destination": "https://ui.human-kit.com/docs/chart-area.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/area",
+			"destination": "https://ui.human-kit.com/docs/chart-area",
+			"permanent": true
+		},
+		{
+			"source": "/docs/bar.md",
+			"destination": "https://ui.human-kit.com/docs/chart-bar.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/bar",
+			"destination": "https://ui.human-kit.com/docs/chart-bar",
+			"permanent": true
+		},
+		{
+			"source": "/docs/dot.md",
+			"destination": "https://ui.human-kit.com/docs/chart-dot.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/dot",
+			"destination": "https://ui.human-kit.com/docs/chart-dot",
+			"permanent": true
+		},
+		{
+			"source": "/docs/arc.md",
+			"destination": "https://ui.human-kit.com/docs/chart-arc.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/arc",
+			"destination": "https://ui.human-kit.com/docs/chart-arc",
+			"permanent": true
+		},
+		{
+			"source": "/docs/axis-and-grid.md",
+			"destination": "https://ui.human-kit.com/docs/chart-axis-and-grid.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/axis-and-grid",
+			"destination": "https://ui.human-kit.com/docs/chart-axis-and-grid",
+			"permanent": true
+		},
+		{
+			"source": "/docs/legend.md",
+			"destination": "https://ui.human-kit.com/docs/chart-legend.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/legend",
+			"destination": "https://ui.human-kit.com/docs/chart-legend",
+			"permanent": true
+		},
+		{
+			"source": "/docs/tooltip.md",
+			"destination": "https://ui.human-kit.com/docs/chart-tooltip.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/tooltip",
+			"destination": "https://ui.human-kit.com/docs/chart-tooltip",
+			"permanent": true
+		},
+		{
+			"source": "/docs/data-table.md",
+			"destination": "https://ui.human-kit.com/docs/chart-data-table.md",
+			"permanent": true
+		},
+		{
+			"source": "/docs/data-table",
+			"destination": "https://ui.human-kit.com/docs/chart-data-table",
+			"permanent": true
+		},
+		{
+			"source": "/(.*)",
+			"destination": "https://ui.human-kit.com/docs/charts",
+			"permanent": true
+		}
+	]
+}
