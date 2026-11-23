@@ -5,8 +5,14 @@ you the behavior: the scales, the geometry, the keyboard operation, the focus
 control and the accessible names. No component gives you a style. You write all
 of the CSS.
 
-> **Status: prototype.** The package is not on npm yet. The public API can
-> change. The design is in [`rfcs/0001-architecture.md`](./rfcs/0001-architecture.md).
+> **The charts moved.** They are now a part of
+> [`@human-kit/ui`](https://github.com/human-kit/ui), as `Chart`. The code is in
+> `packages/ui/src/lib/chart` of that repository, and the documentation is on
+> [ui.human-kit.com/docs/charts](https://ui.human-kit.com/docs/charts).
+>
+> `@human-kit/charts` gets no new versions. To move, change the import of `Chart`
+> to `@human-kit/ui`, and change `@human-kit/charts/scales/` to
+> `@human-kit/ui/chart/scales/`. This repository is an archive.
 
 ## Why this library
 
