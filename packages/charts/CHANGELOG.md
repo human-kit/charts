@@ -1,5 +1,11 @@
 # @human-kit/charts
 
+## 0.6.1
+
+### Patch Changes
+
+- [#50](https://github.com/human-kit/charts/pull/50) [`4967ab2`](https://github.com/human-kit/charts/commit/4967ab2d0953f680ad8c943caa36f3c9590f5296) Thanks [@Agustin-Delgado](https://github.com/Agustin-Delgado)! - The package moved to `@human-kit/ui`. Its README on npm now says so and shows the new import.
+
 ## 0.6.0
 
 ### Minor Changes
